@@ -5,12 +5,14 @@
         "pull_up": true
     },
     "DL": {
-        "simulated": false,
-        "pin": 17
+        "simulated": true,
+        "pin": 27,
+        "active_high": true
     },
-    "DUS1": {
-        "simulated": false,
-        "pin": 17
+    "DB": {
+        "simulated": true,
+        "pin": 22,
+        "active_high": true
     },
     "DB": {
         "simulated": false,
