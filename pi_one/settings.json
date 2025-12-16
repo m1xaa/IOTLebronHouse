@@ -1,4 +1,5 @@
 {
+    "poll_delay_sec": 2,
     "DS1": {
         "simulated": true,
         "pin": 17,
@@ -14,20 +15,19 @@
         "pin": 22,
         "active_high": true
     },
-    "DB": {
-        "simulated": false,
-        "pin": 17
-    },
     "DPIR1": {
-        "simulated": false,
-        "pin": 17
+        "simulated": true,
+        "pin": 23
+    },
+    "DUS1": {
+        "simulated": true,
+        "trig_pin": 24,
+        "echo_pin": 25,
+        "max_cm": 400
     },
     "DMS": {
-        "simulated": false,
-        "pin": 17
-    },
-    "WEBC": {
-        "simulated": false,
-        "pin": 17
+        "simulated": true,
+        "rows": [5, 6, 13, 19],
+        "cols": [12, 16, 20, 21]
     }
 }
