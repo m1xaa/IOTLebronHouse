@@ -2,10 +2,10 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 try:
-    import RPi.GPIO as GPIO  # type: ignore
+    import RPi.GPIO as GPIO 
     _HAS_GPIO = True
 except Exception:
-    GPIO = None  # type: ignore
+    GPIO = None  
     _HAS_GPIO = False
 
 @dataclass(frozen=True)

@@ -4,7 +4,6 @@ from typing import Callable
 from .gpio_utils import GPIO, ensure_gpio_bcm_mode, gpio_availability
 
 def run_pir_loop(pin: int, delay: float, callback: Callable[[bool], None], stop_event):
-    """Reads PIR motion sensor. callback(motion: bool)"""
     ensure_gpio_bcm_mode()
     if not gpio_availability().has_gpio:
         raise RuntimeError("RPi.GPIO not available")

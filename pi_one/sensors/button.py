@@ -4,10 +4,9 @@ from typing import Callable
 from .gpio_utils import GPIO, ensure_gpio_bcm_mode, gpio_availability
 
 def run_button_loop(pin: int, pull_up: bool, delay: float, callback: Callable[[bool], None], stop_event):
-    """Reads a digital button. callback(pressed: bool)"""
     ensure_gpio_bcm_mode()
     if not gpio_availability().has_gpio:
-        raise RuntimeError("RPi.GPIO not available (not running on Raspberry Pi?)")
+        raise RuntimeError("RPi.GPIO not available")
 
     pud = GPIO.PUD_UP if pull_up else GPIO.PUD_DOWN
     GPIO.setup(pin, GPIO.IN, pull_up_down=pud)

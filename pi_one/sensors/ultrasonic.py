@@ -3,10 +3,9 @@ import time
 from typing import Callable, Optional
 from .gpio_utils import GPIO, ensure_gpio_bcm_mode, gpio_availability
 
-SPEED_OF_SOUND_CM_S = 34300.0  # ~343 m/s
+SPEED_OF_SOUND_CM_S = 34300.0  
 
 def measure_distance_cm(trig_pin: int, echo_pin: int, timeout_s: float = 0.02) -> Optional[float]:
-    # Trigger pulse
     GPIO.output(trig_pin, False)
     time.sleep(0.0002)
     GPIO.output(trig_pin, True)

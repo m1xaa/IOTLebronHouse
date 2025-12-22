@@ -25,7 +25,7 @@ def run_membrane_loop(rows, cols, delay, callback, stop_event):
                 if GPIO.input(c) == GPIO.HIGH:
                     key = KEYMAP[i][j]
                     callback(key)
-                    time.sleep(0.3)  # debounce
+                    time.sleep(0.3)
             GPIO.output(r, GPIO.LOW)
 
         time.sleep(delay)
