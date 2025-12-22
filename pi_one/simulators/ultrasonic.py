@@ -6,7 +6,6 @@ from typing import Callable, Optional
 def run_ultrasonic_simulator(delay: float, max_cm: float, callback: Callable[[Optional[float]], None], stop_event):
     d = random.uniform(30, 120)
     while True:
-        # smooth drift + occasional approach
         d += random.uniform(-5, 5)
         if random.random() < 0.1:
             d -= random.uniform(10, 40)
