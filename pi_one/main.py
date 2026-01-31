@@ -1,6 +1,7 @@
 import threading
 import time
 from settings import load_settings
+from mqtt_handler import MqttHandler
 
 from components.ds import run_ds
 from components.dpir import run_dpir
@@ -8,6 +9,9 @@ from components.dus import run_dus
 from components.dms import run_dms
 from components.dl import create_dl
 from components.db import create_db
+
+publisher = None
+settings = None
 
 def ts():
     t = time.localtime()
@@ -19,15 +23,24 @@ def print_event(label: str, payload: str):
     print(payload)
 
 def ds1_cb(pressed: bool):
+    is_sim = settings["DS1"]["simulated"]
+    publisher.publish("DS1", pressed, is_sim)
     print_event("[DS1] (Door Sensor / Button)", f"pressed={pressed}")
 
 def dpir1_cb(motion: bool):
+    is_sim = settings["DPIR1"]["simulated"]
+    publisher.publish("DPIR1", motion, is_sim)
     print_event("[DPIR1] (Door Motion / PIR)", f"motion={motion}")
 
 def dus1_cb(distance_cm):
+    is_sim = settings["DUS1"]["simulated"]
+    if distance_cm is not None:
+        publisher.publish("DUS1", distance_cm, is_sim)
     print_event("[DUS1] (Door Ultrasonic)", f"distance_cm={distance_cm}")
 
 def dms_cb(key):
+    is_sim = settings["DMS"]["simulated"]
+    publisher.publish("DMS", key, is_sim)
     print(f"[DMS] Pressed key: {key}")
 
 def cli_loop(actuators, stop_event):
@@ -57,15 +70,21 @@ def cli_loop(actuators, stop_event):
         elif c == "status":
             print("Actuators:", ", ".join(sorted(actuators.keys())))
         elif c == "led" and len(parts) >= 2:
+            is_sim = settings["DL"].get("simulated", True)
             if parts[1].lower() == "on":
                 actuators["DL"].on()
+                publisher.publish("DL", True, is_sim)
             elif parts[1].lower() == "off":
                 actuators["DL"].off()
+                publisher.publish("DL", False, is_sim)
         elif c == "buzzer" and len(parts) >= 2:
+            is_sim = settings["DB"].get("simulated", True)
             if parts[1].lower() == "on":
                 actuators["DB"].on()
+                publisher.publish("DB", True, is_sim)
             elif parts[1].lower() == "off":
                 actuators["DB"].off()
+                publisher.publish("DB", False, is_sim)
         elif c == "beep":
             seconds = 0.2
             if len(parts) >= 2:
@@ -73,15 +92,20 @@ def cli_loop(actuators, stop_event):
                     seconds = float(parts[1])
                 except ValueError:
                     pass
+            is_sim = settings["DB"].get("simulated", True)
+            publisher.publish("DB", True, is_sim) # beep start
             actuators["DB"].beep(seconds)
+            publisher.publish("DB", False, is_sim) # beep end
         elif c == "exit":
             stop_event.set()
         else:
             print("Unknown command. Type 'help'.")
 
 def main():
+    global publisher, settings
     print("Starting PI1 app")
     settings = load_settings()
+    publisher = MqttHandler(settings)
     poll_delay = float(settings.get("poll_delay_sec", 2))
 
     threads = []
@@ -106,6 +130,7 @@ def main():
             except Exception:
                 pass
         stop_event.set()
+        publisher.stop()
         time.sleep(0.2)
 
 if __name__ == "__main__":

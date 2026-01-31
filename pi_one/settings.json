@@ -1,4 +1,10 @@
 {
+    "PI_ID": "PI1",
+    "mqtt": {
+        "broker": "localhost",
+        "port": 1883,
+        "topic": "home/sensors"
+    },
     "poll_delay_sec": 2,
     "DS1": {
         "simulated": true,
