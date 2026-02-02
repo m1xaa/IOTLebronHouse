@@ -24,23 +24,27 @@ def print_event(label: str, payload: str):
 
 def ds1_cb(pressed: bool):
     is_sim = settings["DS1"]["simulated"]
-    publisher.publish("DS1", pressed, is_sim)
+    name = settings["DS1"]["name"]
+    publisher.publish(name, pressed, is_sim)
     print_event("[DS1] (Door Sensor / Button)", f"pressed={pressed}")
 
 def dpir1_cb(motion: bool):
     is_sim = settings["DPIR1"]["simulated"]
-    publisher.publish("DPIR1", motion, is_sim)
+    name = settings["DPIR1"]["name"]
+    publisher.publish(name, motion, is_sim)
     print_event("[DPIR1] (Door Motion / PIR)", f"motion={motion}")
 
 def dus1_cb(distance_cm):
     is_sim = settings["DUS1"]["simulated"]
+    name = settings["DUS1"]["name"]
     if distance_cm is not None:
-        publisher.publish("DUS1", distance_cm, is_sim)
+        publisher.publish(name, distance_cm, is_sim)
     print_event("[DUS1] (Door Ultrasonic)", f"distance_cm={distance_cm}")
 
 def dms_cb(key):
     is_sim = settings["DMS"]["simulated"]
-    publisher.publish("DMS", key, is_sim)
+    name = settings["DMS"]["name"]
+    publisher.publish(name, key, is_sim)
     print(f"[DMS] Pressed key: {key}")
 
 def cli_loop(actuators, stop_event):
@@ -64,7 +68,8 @@ def cli_loop(actuators, stop_event):
             continue
         parts = cmd.split()
         c = parts[0].lower()
-
+        name_dl = settings['DL']['name']
+        name_db = settings['DB']['name']
         if c == "help":
             print(help_text)
         elif c == "status":
@@ -73,18 +78,18 @@ def cli_loop(actuators, stop_event):
             is_sim = settings["DL"].get("simulated", True)
             if parts[1].lower() == "on":
                 actuators["DL"].on()
-                publisher.publish("DL", True, is_sim)
+                publisher.publish(name_dl, True, is_sim)
             elif parts[1].lower() == "off":
                 actuators["DL"].off()
-                publisher.publish("DL", False, is_sim)
+                publisher.publish(name_dl, False, is_sim)
         elif c == "buzzer" and len(parts) >= 2:
             is_sim = settings["DB"].get("simulated", True)
             if parts[1].lower() == "on":
                 actuators["DB"].on()
-                publisher.publish("DB", True, is_sim)
+                publisher.publish(name_db, True, is_sim)
             elif parts[1].lower() == "off":
                 actuators["DB"].off()
-                publisher.publish("DB", False, is_sim)
+                publisher.publish(name_db, False, is_sim)
         elif c == "beep":
             seconds = 0.2
             if len(parts) >= 2:
@@ -93,9 +98,10 @@ def cli_loop(actuators, stop_event):
                 except ValueError:
                     pass
             is_sim = settings["DB"].get("simulated", True)
-            publisher.publish("DB", True, is_sim) # beep start
+            name = settings['DB']['name']
+            publisher.publish(name, True, is_sim) # beep start
             actuators["DB"].beep(seconds)
-            publisher.publish("DB", False, is_sim) # beep end
+            publisher.publish(name, False, is_sim) # beep end
         elif c == "exit":
             stop_event.set()
         else:
