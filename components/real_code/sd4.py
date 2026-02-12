@@ -1,6 +1,6 @@
 import threading
 import time
-import RPi.GPIO as GPIO
+from .gpio_utils import GPIO, ensure_gpio_bcm_mode, gpio_availability
 
 NUM_MAP = {
     '0': (1,1,1,1,1,1,0),

@@ -40,17 +40,15 @@ pip install -r requirements.txt
 
 ### 3. Run backend services
 
-Run the server first:
+Run SpringBoot in IntellJ:
+
+Then run scripts on PI by typing the folowing command:
 
 ```bash
-python server.py
+python -m {pi_folder}.main
 ```
 
-Then run the main application:
-
-```bash
-python main.py
-```
+pi_folder can be pi_one, pi_two or pi_three
 
 > Optionally, you may use the CLI to control actuators.
 

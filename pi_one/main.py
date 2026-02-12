@@ -110,7 +110,7 @@ def main():
 
     settings = load_settings("pi_one")
     publisher = MqttHandler(settings)
-    poll_delay = float(settings.get("poll_delay_sec", 2))
+    poll_delay = float(settings.get("delay_sec", 2))
 
     threads = []
     stop_event = threading.Event()
@@ -120,9 +120,9 @@ def main():
         "DB": create_db(settings["DB"]),
     }
 
-    run_ds({**settings["DS1"], "poll_delay_sec": poll_delay}, threads, stop_event, ds1_cb)
-    run_dpir({**settings["DPIR1"], "poll_delay_sec": poll_delay}, threads, stop_event, dpir1_cb)
-    run_dus({**settings["DUS1"], "poll_delay_sec": poll_delay}, threads, stop_event, dus1_cb)
+    run_ds({**settings["DS1"], "delay_sec": poll_delay}, threads, stop_event, ds1_cb)
+    run_dpir({**settings["DPIR1"], "delay_sec": poll_delay}, threads, stop_event, dpir1_cb)
+    run_dus({**settings["DUS1"], "delay_sec": poll_delay}, threads, stop_event, dus1_cb)
     run_dms(settings["DMS"], threads, stop_event, dms_cb)
 
     try:

@@ -5,8 +5,8 @@
         "port": 1883,
         "topic": "home/sensors"
     },
-    "poll_delay_sec": 2,
-        "IR": {
+    "delay_sec": 2,
+    "IR": {
         "simulated": true,
         "pin": 17,
         "name": "IR"
@@ -25,6 +25,22 @@
         "cols": 16,
         "rows": 2,
         "name": "LCD"
+    },
+    "DHT1": {
+        "simulated": true,
+        "pin": 17,
+        "delay_sec": 3,
+        "name": "DHT1"
+    },
+    "DHT2": {
+        "simulated": true,
+        "pin": 17,
+        "delay_sec": 3,
+        "name": "DHT2"
+    },
+    "DPIR3": {
+        "simulated": true,
+        "pin": 23,
+        "name": "DPIR3"
     }
-
 }

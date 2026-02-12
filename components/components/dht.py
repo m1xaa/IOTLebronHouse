@@ -12,7 +12,7 @@ def run_dht(
     stop_event,
     callback: Callable[[dict], None],
 ):
-    poll_delay = float(settings.get("poll_delay_sec", 2))
+    poll_delay = float(settings.get("delay_sec", 2))
 
     if settings.get("simulated", True):
         t = threading.Thread(

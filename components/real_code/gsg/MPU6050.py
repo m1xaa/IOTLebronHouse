@@ -49,11 +49,16 @@ THE SOFTWARE.
 import math
 import ctypes
 import time
-import smbus
+
 import csv
 from components.real_code.gsg.MPUConstants import MPUConstants as C
 from components.real_code.gsg.Quaternion import Quaternion as Q
 from components.real_code.gsg.Quaternion import XYZVector as V
+
+try:
+    import smbus
+except ImportError:
+    smbus = None
 
 
 class MPU6050:

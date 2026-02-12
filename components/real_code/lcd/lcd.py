@@ -1,5 +1,5 @@
-from PCF8574 import PCF8574_GPIO
-from Adafruit_LCD1602 import Adafruit_CharLCD
+from .PCF8574 import PCF8574_GPIO
+from .Adafruit_LCD1602 import Adafruit_CharLCD
 
 class LCD:
 

@@ -1,5 +1,10 @@
-import smbus
 import time
+
+try:
+    import smbus
+except ImportError:
+    smbus = None
+	
 class PCF8574_I2C(object):
 	OUPUT = 0
 	INPUT = 1

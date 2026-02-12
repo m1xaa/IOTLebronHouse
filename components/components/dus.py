@@ -7,7 +7,7 @@ from components.simulated_code.dus import run_ultrasonic_simulator
 
 
 def run_dus(settings: Dict[str, Any], threads: List[threading.Thread], stop_event, callback):
-    delay = float(settings.get("delay_sec", settings.get("poll_delay_sec", 2)))
+    delay = float(settings.get("delay_sec", settings.get("delay_sec", 2)))
     max_cm = float(settings.get("max_cm", 400))
     if settings.get("simulated", True):
         t = threading.Thread(target=run_ultrasonic_simulator, args=(delay, max_cm, callback, stop_event), daemon=True)

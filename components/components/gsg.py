@@ -11,7 +11,7 @@ def run_gsg(
     stop_event,
     callback: Callable[[bool], None],
 ):
-    poll_delay = float(settings.get("poll_delay_sec", 0.2))
+    poll_delay = float(settings.get("delay_sec", 0.2))
     threshold = float(settings.get("threshold", 0.5))
 
     if settings.get("simulated", True):

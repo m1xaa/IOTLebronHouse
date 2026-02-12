@@ -12,7 +12,7 @@ def run_ds(
     stop_event,
     callback: Callable[[float], None],
 ):
-    delay = float(settings.get("delay_sec", settings.get("poll_delay_sec", 2)))
+    delay = float(settings.get("delay_sec", settings.get("delay_sec", 2)))
 
     if settings.get("simulated", True):
         t = threading.Thread(

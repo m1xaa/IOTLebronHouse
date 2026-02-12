@@ -5,7 +5,7 @@
         "port": 1883,
         "topic": "home/sensors"
     },
-    "poll_delay_sec": 2,
+    "delay_sec": 2,
     "4SD": {
         "simulated": true,
         "segments": [11,4,23,8,7,10,18,25],
@@ -22,14 +22,31 @@
     "DHT3": {
         "simulated": true,
         "pin": 17,
-        "poll_delay_sec": 3,
-        "name": "DHT"
+        "delay_sec": 3,
+        "name": "DHT3"
     },
     "GSG": {
         "simulated": true,
-        "poll_delay_sec": 0.2,
+        "delay_sec": 0.2,
         "threshold": 0.5,
         "name": "GSG"
+    },
+    "DS2": {
+        "simulated": true,
+        "pin": 17,
+        "pull_up": true,
+        "name": "DS2"
+    },
+    "DPIR2": {
+        "simulated": true,
+        "pin": 23,
+        "name": "DPIR2"
+    },
+    "DUS2": {
+        "simulated": true,
+        "trig_pin": 24,
+        "echo_pin": 25,
+        "max_cm": 400,
+        "name": "DUS2"
     }
-
 }

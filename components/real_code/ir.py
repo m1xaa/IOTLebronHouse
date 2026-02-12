@@ -1,4 +1,4 @@
-import RPi.GPIO as GPIO
+from .gpio_utils import GPIO, ensure_gpio_bcm_mode, gpio_availability
 from datetime import datetime
 import time
 
