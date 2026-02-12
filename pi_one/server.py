@@ -7,7 +7,7 @@ from influxdb_client.client.write_api import SYNCHRONOUS
 app = Flask(__name__)
 
 url = "http://localhost:8086"
-token = "my-super-secret-auth-token"
+token = "v5HvugmRZJSuBkx7ajUtO1Bvy-i1faZCytQJQ02fim2B8SaV8TM8GfEYI_HDPenh5XEtYb2p73ZjZG3MjSZxYg=="
 org = "iot"
 bucket = "home"
 
