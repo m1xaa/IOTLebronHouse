@@ -1,14 +1,14 @@
 import threading
 import time
+from components.components.db import create_db
+from components.components.dl import create_dl
+from components.components.dms import run_dms
+from components.components.dpir import run_dpir
+from components.components.ds import run_ds
+from components.components.dus import run_dus
 from settings import load_settings
 from mqtt_handler import MqttHandler
 
-from components.ds import run_ds
-from components.dpir import run_dpir
-from components.dus import run_dus
-from components.dms import run_dms
-from components.dl import create_dl
-from components.db import create_db
 
 publisher = None
 settings = None
@@ -22,11 +22,11 @@ def print_event(label: str, payload: str):
     print(f"[{ts()}] {label}")
     print(payload)
 
-def ds1_cb(pressed: bool):
+def ds1_cb(duration: float):
     is_sim = settings["DS1"]["simulated"]
     name = settings["DS1"]["name"]
-    publisher.publish(name, pressed, is_sim)
-    print_event("[DS1] (Door Sensor / Button)", f"pressed={pressed}")
+    publisher.publish(name, duration, is_sim)
+    print_event("[DS1] (Door Sensor / Button)", f"duration={duration}")
 
 def dpir1_cb(motion: bool):
     is_sim = settings["DPIR1"]["simulated"]
@@ -41,23 +41,23 @@ def dus1_cb(distance_cm):
         publisher.publish(name, distance_cm, is_sim)
     print_event("[DUS1] (Door Ultrasonic)", f"distance_cm={distance_cm}")
 
-def dms_cb(key):
+def dms_cb(pin: str):
     is_sim = settings["DMS"]["simulated"]
     name = settings["DMS"]["name"]
-    publisher.publish(name, key, is_sim)
-    print(f"[DMS] Pressed key: {key}")
+    publisher.publish(name, pin, is_sim)
+    print_event("[DMS] (Membrane Switch)", f"PIN entered: {pin}")
 
 def cli_loop(actuators, stop_event):
     help_text = (
         "\nCommands:\n"
         "  led on|off\n"
         "  buzzer on|off\n"
-        "  beep [seconds]\n"
         "  status\n"
         "  help\n"
         "  exit\n"
     )
     print(help_text)
+
     while not stop_event.is_set():
         try:
             cmd = input("pi1> ").strip()
@@ -66,14 +66,19 @@ def cli_loop(actuators, stop_event):
 
         if not cmd:
             continue
+
         parts = cmd.split()
         c = parts[0].lower()
+
         name_dl = settings['DL']['name']
         name_db = settings['DB']['name']
+
         if c == "help":
             print(help_text)
+
         elif c == "status":
             print("Actuators:", ", ".join(sorted(actuators.keys())))
+
         elif c == "led" and len(parts) >= 2:
             is_sim = settings["DL"].get("simulated", True)
             if parts[1].lower() == "on":
@@ -82,6 +87,7 @@ def cli_loop(actuators, stop_event):
             elif parts[1].lower() == "off":
                 actuators["DL"].off()
                 publisher.publish(name_dl, False, is_sim)
+
         elif c == "buzzer" and len(parts) >= 2:
             is_sim = settings["DB"].get("simulated", True)
             if parts[1].lower() == "on":
@@ -90,27 +96,19 @@ def cli_loop(actuators, stop_event):
             elif parts[1].lower() == "off":
                 actuators["DB"].off()
                 publisher.publish(name_db, False, is_sim)
-        elif c == "beep":
-            seconds = 0.2
-            if len(parts) >= 2:
-                try:
-                    seconds = float(parts[1])
-                except ValueError:
-                    pass
-            is_sim = settings["DB"].get("simulated", True)
-            name = settings['DB']['name']
-            publisher.publish(name, True, is_sim) # beep start
-            actuators["DB"].beep(seconds)
-            publisher.publish(name, False, is_sim) # beep end
+
         elif c == "exit":
             stop_event.set()
+
         else:
             print("Unknown command. Type 'help'.")
 
 def main():
     global publisher, settings
+
     print("Starting PI1 app")
-    settings = load_settings()
+
+    settings = load_settings("pi_one")
     publisher = MqttHandler(settings)
     poll_delay = float(settings.get("poll_delay_sec", 2))
 
@@ -121,7 +119,7 @@ def main():
         "DL": create_dl(settings["DL"]),
         "DB": create_db(settings["DB"]),
     }
-    
+
     run_ds({**settings["DS1"], "poll_delay_sec": poll_delay}, threads, stop_event, ds1_cb)
     run_dpir({**settings["DPIR1"], "poll_delay_sec": poll_delay}, threads, stop_event, dpir1_cb)
     run_dus({**settings["DUS1"], "poll_delay_sec": poll_delay}, threads, stop_event, dus1_cb)
@@ -135,6 +133,7 @@ def main():
                 a.cleanup()
             except Exception:
                 pass
+
         stop_event.set()
         publisher.stop()
         time.sleep(0.2)

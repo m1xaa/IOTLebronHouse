@@ -1,0 +1,30 @@
+{
+    "PI_ID": "PI3",
+    "mqtt": {
+        "broker": "localhost",
+        "port": 1883,
+        "topic": "home/sensors"
+    },
+    "poll_delay_sec": 2,
+        "IR": {
+        "simulated": true,
+        "pin": 17,
+        "name": "IR"
+    },
+    "BRGB": {
+        "simulated": true,
+        "red_pin": 12,
+        "green_pin": 13,
+        "blue_pin": 19,
+        "active_high": true,
+        "name": "BRGB"
+    },
+    "LCD": {
+        "simulated": true,
+        "address": 39,
+        "cols": 16,
+        "rows": 2,
+        "name": "LCD"
+    }
+
+}
