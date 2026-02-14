@@ -2,7 +2,11 @@ import random
 import time
 from typing import Callable
 
-def run_button_simulator(delay: float, callback: Callable[[float], None], stop_event):
+def run_button_simulator(
+    delay: float,
+    callback: Callable[[str], None],
+    stop_event
+):
     pressed = False
     pressed_since = None
     long_sent = False
@@ -11,25 +15,21 @@ def run_button_simulator(delay: float, callback: Callable[[float], None], stop_e
     while not stop_event.is_set():
         now = time.time()
 
-        # random promena stanja
         if random.random() < 0.1:
             if not pressed:
-                # tek pritisnuto
                 pressed = True
                 pressed_since = now
                 long_sent = False
-                callback(0.001)
+                callback("PRESS")
             else:
-                # pušteno
                 pressed = False
                 pressed_since = None
                 long_sent = False
+                callback("RELEASE")
 
-        # ako se drži, proveri long press
         if pressed and pressed_since and not long_sent:
-            duration = now - pressed_since
-            if duration >= LONG_THRESHOLD:
-                callback(duration)
+            if (now - pressed_since) >= LONG_THRESHOLD:
+                callback("LONG_PRESS")
                 long_sent = True
 
         time.sleep(delay)

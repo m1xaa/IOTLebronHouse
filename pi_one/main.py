@@ -22,11 +22,11 @@ def print_event(label: str, payload: str):
     print(f"[{ts()}] {label}")
     print(payload)
 
-def ds1_cb(duration: float):
+def ds1_cb(event):
     is_sim = settings["DS1"]["simulated"]
     name = settings["DS1"]["name"]
-    publisher.publish(name, duration, is_sim)
-    print_event("[DS1] (Door Sensor / Button)", f"duration={duration}")
+    publisher.publish(name, event, is_sim)
+    print_event("[DS1] (Door Sensor / Button)", f"event={event}")
 
 def dpir1_cb(motion: bool):
     is_sim = settings["DPIR1"]["simulated"]

@@ -51,11 +51,11 @@ def gsg_cb(detected: bool):
     print_event("[GSG] (Gas Sensor)", str(detected))
 
 
-def ds2_cb(duration: float):
+def ds2_cb(event):
     is_sim = settings["DS2"]["simulated"]
     name = settings["DS2"]["name"]
-    publisher.publish(name, duration, is_sim)
-    print_event("[DS2] (Door Sensor)", f"duration={duration}")
+    publisher.publish(name, event, is_sim)
+    print_event("[DS2] (Door Sensor)", f"event={event}")
 
 
 def dpir2_cb(motion: bool):

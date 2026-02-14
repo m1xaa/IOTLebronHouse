@@ -23,17 +23,18 @@ def run_button_loop(pin: int, pull_up: bool, delay: float, callback, stop_event)
         if pressed and not last:
             pressed_since = now
             long_sent = False
-            callback(0.001)
+            callback("PRESS")
 
         elif pressed and last and not long_sent:
-            duration = now - pressed_since
-            if duration >= LONG_THRESHOLD:
-                callback(duration)
+            if pressed_since and (now - pressed_since) >= LONG_THRESHOLD:
+                callback("LONG_PRESS")
                 long_sent = True
 
         elif not pressed and last:
+            callback("RELEASE")
             pressed_since = None
             long_sent = False
 
         last = pressed
         time.sleep(delay)
+
