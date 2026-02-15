@@ -37,7 +37,7 @@ public class HouseState {
     }
 
 
-    public int getPersonsInside() {
+    public int getPersonInside() {
         return personsInside.get();
     }
 

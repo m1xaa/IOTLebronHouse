@@ -17,14 +17,26 @@ public class SensorEventService {
             case "DPIR1" -> {
                 if (value.isBoolean() && value.asBoolean()) {
                     motionService.checkRecentMotion("DUS1");
+                    motionService.motionDetected();
                 }
             }
             case "DPIR2" -> {
                 if (value.isBoolean() && value.asBoolean()) {
                     motionService.checkRecentMotion("DUS2");
+                    motionService.motionDetected();
+                }
+            }
+            case "DPIR3" -> {
+                if (value.isBoolean() && value.asBoolean()) {
+                    motionService.motionDetected();
                 }
             }
 
+            case "GSG" -> {
+                if (value.isBoolean() && value.asBoolean()) {
+                    motionService.handleGsgMovement();
+                }
+            }
             case "DS1", "DS2" -> {
                 if (!value.isTextual())
                     return;

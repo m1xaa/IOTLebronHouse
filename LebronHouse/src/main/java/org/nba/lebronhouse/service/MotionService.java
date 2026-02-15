@@ -3,8 +3,11 @@ package org.nba.lebronhouse.service;
 import com.influxdb.client.InfluxDBClient;
 import lombok.RequiredArgsConstructor;
 import org.nba.lebronhouse.config.InfluxConfig;
+import org.nba.lebronhouse.events.alarm.AlarmStateChangedEvent;
+import org.nba.lebronhouse.state.AlarmState;
 import org.nba.lebronhouse.state.HouseState;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -18,6 +21,8 @@ public class MotionService {
     private final InfluxConfig influxConfig;
 
     private final HouseState houseState;
+
+    private final ApplicationEventPublisher eventPublisher;
 
 
     public void checkRecentMotion(String component) {
@@ -55,4 +60,19 @@ public class MotionService {
         }
     }
 
+    public void motionDetected() {
+        if (houseState.getPersonInside() > 0)
+            return;
+        AlarmState current = houseState.getAlarmState();
+        if (current.equals(AlarmState.ALARM))
+            return;
+        houseState.setState(AlarmState.ALARM);
+        eventPublisher.publishEvent(new AlarmStateChangedEvent(AlarmState.ALARM));
+    }
+
+    public void handleGsgMovement() {
+        boolean stateChanged = houseState.armAlarm();
+        if (stateChanged)
+            eventPublisher.publishEvent(new AlarmStateChangedEvent(AlarmState.ALARM));
+    }
 }
