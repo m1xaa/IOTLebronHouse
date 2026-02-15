@@ -12,6 +12,9 @@ from mqtt_handler import MqttHandler
 
 publisher = None
 settings = None
+dl_timer = None
+dl_lock = threading.Lock()
+actuators = {}
 
 def ts():
     t = time.localtime()
@@ -29,10 +32,26 @@ def ds1_cb(event):
     print_event("[DS1] (Door Sensor / Button)", f"event={event}")
 
 def dpir1_cb(motion: bool):
+    global dl_timer
+
     is_sim = settings["DPIR1"]["simulated"]
     name = settings["DPIR1"]["name"]
     publisher.publish(name, motion, is_sim)
     print_event("[DPIR1] (Door Motion / PIR)", f"motion={motion}")
+
+    if not motion:
+        return
+
+    with dl_lock:
+        actuators["DL"].on()
+        publisher.publish(settings['DL']['name'], True, settings['DL']['simulated'])
+        print_event("[DL1]", "on (motion), scheduling off in 10s")
+
+        if dl_timer is not None:
+            dl_timer.cancel()
+        dl_timer = threading.Timer(10.0, dl_off)
+        dl_timer.daemon = True
+        dl_timer.start()
 
 def dus1_cb(distance_cm):
     is_sim = settings["DUS1"]["simulated"]
@@ -46,6 +65,15 @@ def dms_cb(pin: str):
     name = settings["DMS"]["name"]
     publisher.publish(name, pin, is_sim)
     print_event("[DMS] (Membrane Switch)", f"PIN entered: {pin}")
+
+def dl_off():
+    with dl_lock:
+        try:
+            actuators["DL"].off()
+            publisher.publish(settings['DL']['name'], False, settings['DL']['simulated'])
+            print_event("[DL1]", "auto-off after 10s")
+        except Exception as e:
+            print_event("[DL1]", f"auto-off error: {e}")
 
 def cli_loop(actuators, stop_event):
     help_text = (
@@ -104,7 +132,7 @@ def cli_loop(actuators, stop_event):
             print("Unknown command. Type 'help'.")
 
 def main():
-    global publisher, settings
+    global publisher, settings, dl_timer, dl_lock, actuators
 
     print("Starting PI1 app")
 
@@ -119,6 +147,8 @@ def main():
         "DL": create_dl(settings["DL"]),
         "DB": create_db(settings["DB"]),
     }
+
+
 
     run_ds({**settings["DS1"], "delay_sec": poll_delay}, threads, stop_event, ds1_cb)
     run_dpir({**settings["DPIR1"], "delay_sec": poll_delay}, threads, stop_event, dpir1_cb)
