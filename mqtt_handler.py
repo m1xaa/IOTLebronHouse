@@ -4,30 +4,49 @@ import threading
 import paho.mqtt.client as mqtt
 
 class MqttHandler:
-    def __init__(self, settings):
+    def __init__(self, settings, on_message_callback=None):
         self.broker = settings["mqtt"]["broker"]
         self.port = settings["mqtt"]["port"]
         self.topic = settings["mqtt"]["topic"]
         self.pi_id = settings["PI_ID"]
+        self.on_message_callback = on_message_callback
         
         self.client = mqtt.Client()
         self.client.on_connect = self.on_connect
+        self.client.on_message = self.on_message
         self.client.connect(self.broker, self.port, 60)
         self.client.loop_start()
 
-        # batch storage
         self.batch = []
         self.batch_lock = threading.Lock()
         self.stop_event = threading.Event()
 
-        # deamon thread for batch publishing
         self.batch_thread = threading.Thread(target=self._batch_loop, daemon=True)
         self.batch_thread.start()
 
     def on_connect(self, client, userdata, flags, rc):
         print(f"Connected to MQTT Broker with code {rc}")
+        client.subscribe("home/all")
+        print(f"[MQTT] Subscribed to: home/all")
+        
+        pi_topic = f"home/{self.pi_id}"
+        client.subscribe(pi_topic)
+        print(f"[MQTT] Subscribed to: {pi_topic}")
 
-    def _batch_loop(self): # send batch every 5s
+    def on_message(self, client, userdata, msg):
+        try:
+            payload = json.loads(msg.payload.decode())
+            print(f"[MQTT] Received on {msg.topic}: {payload}")
+            
+            if self.on_message_callback:
+                self.on_message_callback(msg.topic, payload)
+                
+        except json.JSONDecodeError:
+            print(f"[MQTT] Invalid JSON received on {msg.topic}")
+        except Exception as e:
+            print(f"[MQTT] Error processing message: {e}")
+
+    def _batch_loop(self):
         while not self.stop_event.is_set():
             time.sleep(5)
             with self.batch_lock:
@@ -50,10 +69,12 @@ class MqttHandler:
             "timestamp": timestamp
         }
         with self.batch_lock:
-                    self.batch.append(data_point)
-                    print(f"[MQTT] Queued: {component}={value} (simulated={is_simulated})")
+            self.batch.append(data_point)
+            print(f"[MQTT] Queued: {component}={value} (simulated={is_simulated})")
+
        
     def stop(self):
         self.stop_event.set()
+        self.batch_thread.join(timeout=1)
         self.client.loop_stop()
         self.client.disconnect()

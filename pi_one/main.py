@@ -131,13 +131,17 @@ def cli_loop(actuators, stop_event):
         else:
             print("Unknown command. Type 'help'.")
 
+def mqtt_message_handler(topic, payload):
+    print("from handler")
+    print(payload)
+
 def main():
     global publisher, settings, dl_timer, dl_lock, actuators
 
     print("Starting PI1 app")
 
     settings = load_settings("pi_one")
-    publisher = MqttHandler(settings)
+    publisher = MqttHandler(settings, mqtt_message_handler)
     poll_delay = float(settings.get("delay_sec", 2))
 
     threads = []
@@ -151,9 +155,9 @@ def main():
 
 
     run_ds({**settings["DS1"], "delay_sec": poll_delay}, threads, stop_event, ds1_cb)
-    run_dpir({**settings["DPIR1"], "delay_sec": poll_delay}, threads, stop_event, dpir1_cb)
-    run_dus({**settings["DUS1"], "delay_sec": poll_delay}, threads, stop_event, dus1_cb)
-    run_dms(settings["DMS"], threads, stop_event, dms_cb)
+    # run_dpir({**settings["DPIR1"], "delay_sec": poll_delay}, threads, stop_event, dpir1_cb)
+    # run_dus({**settings["DUS1"], "delay_sec": poll_delay}, threads, stop_event, dus1_cb)
+    # run_dms(settings["DMS"], threads, stop_event, dms_cb)
 
     try:
         cli_loop(actuators, stop_event)

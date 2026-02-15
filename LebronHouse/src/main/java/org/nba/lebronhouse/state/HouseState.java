@@ -24,6 +24,15 @@ public class HouseState {
         alarmState.set(newState);
     }
 
+    public boolean armAlarm() {
+        AlarmState previous = alarmState.getAndSet(AlarmState.ALARM);
+        return previous != AlarmState.ALARM;
+    }
+
+    public boolean disarmAlarm() {
+        AlarmState previous = alarmState.getAndSet(AlarmState.DISARMED);
+        return previous != AlarmState.DISARMED;
+    }
 
 
     public int getPersonsInside() {
@@ -35,9 +44,10 @@ public class HouseState {
     }
 
     public void decrementPersons() {
-        personsInside.decrementAndGet();
+        personsInside.updateAndGet(current ->
+                current > 0 ? current - 1 : 0
+        );
     }
-
 
 
     public int getExtraSeconds() {

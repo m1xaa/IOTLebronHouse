@@ -153,7 +153,9 @@ def cli_loop(display, stop_event):
 
 
 
-# ===== MAIN =====
+def mqtt_message_handler(topic, payload):
+    print("from handler")
+    print(payload)
 
 def main():
     global publisher, settings
@@ -161,7 +163,7 @@ def main():
     print("Starting PI2 app")
 
     settings = load_settings("pi_two")
-    publisher = MqttHandler(settings)
+    publisher = MqttHandler(settings, mqtt_message_handler)
 
     poll_delay = float(settings.get("delay_sec", 2))
 
