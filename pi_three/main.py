@@ -13,14 +13,22 @@ from mqtt_handler import MqttHandler
 
 publisher = None
 settings = None
+rgb_device = None
+
+
+
+rgb_state = {"r": 0, "g": 0, "b": 0}
+rgb_lock = threading.Lock()
+
+
 
 recentDhtMetrics = []
 metrics_lock = threading.Lock()
 
 
+
 def ts():
-    t = time.localtime()
-    return time.strftime('%H:%M:%S', t)
+    return time.strftime('%H:%M:%S', time.localtime())
 
 
 def print_event(label: str, payload: str):
@@ -29,164 +37,74 @@ def print_event(label: str, payload: str):
     print(payload)
 
 
-# ===== CALLBACKS =====
+
+def set_rgb_state(r, g, b):
+    global rgb_state
+
+    name_rgb = settings["BRGB"]["name"]
+    is_sim_rgb = settings["BRGB"]["simulated"]
+
+    with rgb_lock:
+        if rgb_state == {"r": r, "g": g, "b": b}:
+            return
+
+        rgb_device.set_color(r, g, b)
+        rgb_state = {"r": r, "g": g, "b": b}
+
+    publisher.publish(name_rgb, rgb_state, is_sim_rgb)
+    print_event("[BRGB]", rgb_state)
+
+
 
 def ir_cb(button_name: str):
     is_sim = settings["IR"]["simulated"]
     name = settings["IR"]["name"]
 
+ 
     publisher.publish(name, button_name, is_sim)
-    print_event("[IR]", f"button={button_name}")
 
+
+    if button_name == "1":
+        set_rgb_state(1, 0, 0)      
+    elif button_name == "2":
+        set_rgb_state(0, 1, 0)      
+    elif button_name == "3":
+        set_rgb_state(0, 0, 1)     
+    elif button_name == "OK":
+        set_rgb_state(1, 1, 1)     
+    elif button_name == "#":
+        set_rgb_state(0, 0, 0)     
 
 
 def dht1_cb(payload):
-    is_sim = settings["DHT1"]["simulated"]
-    name = settings["DHT1"]["name"]
-
-    publisher.publish(name, payload, is_sim)
-    #print_event("[DHT1]", str(payload))
+    publisher.publish(settings["DHT1"]["name"], payload, settings["DHT1"]["simulated"])
 
 
 def dht2_cb(payload):
-    is_sim = settings["DHT2"]["simulated"]
-    name = settings["DHT2"]["name"]
-
-    publisher.publish(name, payload, is_sim)
-    #print_event("[DHT2]", str(payload))
+    publisher.publish(settings["DHT2"]["name"], payload, settings["DHT2"]["simulated"])
 
 
 def dpir3_cb(motion: bool):
-    is_sim = settings["DPIR3"]["simulated"]
-    name = settings["DPIR3"]["name"]
-
-    publisher.publish(name, motion, is_sim)
-    print_event("[DPIR3]", f"motion={motion}")
-
-
-# ===== CLI (RGB + LCD kontrola) =====
-
-def cli_loop(rgb, lcd, stop_event):
-    help_text = (
-        "\nCommands:\n"
-        "  rgb on\n"
-        "  rgb off\n"
-        "  rgb r g b   (0 or 1)\n"
-        "  lcd <line1> | <line2>\n"
-        "  clear\n"
-        "  help\n"
-        "  exit\n"
-    )
-
-    print(help_text)
-
-    name_rgb = settings["BRGB"]["name"]
-    is_sim_rgb = settings["BRGB"]['simulated']
-
-    name_lcd = settings["LCD"]["name"]
-    is_sim_lcd = settings["LCD"]['simulated']
-
-    while not stop_event.is_set():
-        try:
-            cmd = input("pi3> ").strip()
-        except (EOFError, KeyboardInterrupt):
-            cmd = "exit"
-
-        if not cmd:
-            continue
-
-        parts = cmd.split()
-        c = parts[0].lower()
-
-        if c == "help":
-            print(help_text)
-
-        elif c == "rgb":
-
-            if len(parts) == 2 and parts[1].lower() == "on":
-                rgb.on()
-                publisher.publish(name_rgb, {"r":1,"g":1,"b":1}, is_sim_rgb)
-                print_event("[BRGB]", "on")
-
-            elif len(parts) == 2 and parts[1].lower() == "off":
-                rgb.off()
-                publisher.publish(name_rgb, {"r":0,"g":0,"b":0}, is_sim_rgb)
-                print_event("[BRGB]", "off")
-
-            elif len(parts) == 4:
-                try:
-                    r = int(parts[1])
-                    g = int(parts[2])
-                    b = int(parts[3])
-
-                    if r in (0,1) and g in (0,1) and b in (0,1):
-                        rgb.set_color(r, g, b)
-                        publisher.publish(name_rgb, {"r":r,"g":g,"b":b}, is_sim_rgb)
-                        print_event("[BRGB]", f"{r},{g},{b}")
-                    else:
-                        print("Values must be 0 or 1.")
-                except ValueError:
-                    print("Invalid RGB values.")
-
-        elif c == "lcd":
-
-            text = cmd[4:].strip()
-
-            if "|" in text:
-                line1, line2 = text.split("|", 1)
-                line1 = line1.strip()
-                line2 = line2.strip()
-                lcd.display(line1, line2)
-
-                publisher.publish(
-                    name_lcd,
-                    {"line1": line1, "line2": line2},
-                    is_sim_lcd
-                )
-
-                print_event("[LCD]", f"{line1} | {line2}")
-
-            else:
-                lcd.display(text, "")
-                publisher.publish(
-                    name_lcd,
-                    {"line1": text, "line2": ""},
-                    is_sim_lcd
-                )
-
-                print_event("[LCD]", text)
-
-        elif c == "clear":
-            lcd.clear()
-            publisher.publish(
-                name_lcd,
-                {"line1": "", "line2": ""},
-                is_sim_lcd
-            )
-            print_event("[LCD]", "cleared")
-
-        elif c == "exit":
-            stop_event.set()
-
-        else:
-            print("Unknown command.")
+    publisher.publish(settings["DPIR3"]["name"], motion, settings["DPIR3"]["simulated"])
 
 
 
 def mqtt_message_handler(topic, payload):
     global recentDhtMetrics
 
-    if "type" not in payload or payload['type'] != "DHT":
-        return
+    if payload.get("type") == "DHT":
+        with metrics_lock:
+            recentDhtMetrics = payload["metrics"]
 
-    with metrics_lock:
-        recentDhtMetrics = payload['metrics']
+    # ovde mora doci kontrolisanje rgb preko weba jos jedan event
+
+
 
 def lcd_rotation_loop(lcd, stop_event):
     index = 0
 
     name_lcd = settings["LCD"]["name"]
-    is_sim_lcd = settings["LCD"]['simulated']
+    is_sim_lcd = settings["LCD"]["simulated"]
 
     last_display = None
 
@@ -204,8 +122,8 @@ def lcd_rotation_loop(lcd, stop_event):
             temp = metric.get("temperature")
             hum = metric.get("humidity")
 
-            line1 = f"Temp: {temp:.1f} C" if temp is not None else "Temp: --"
-            line2 = f"Hum:  {hum:.1f} %" if hum is not None else "Hum:  --"
+            line1 = f"Temp: {temp:.1f} C" if temp else "Temp: --"
+            line2 = f"Hum:  {hum:.1f} %" if hum else "Hum:  --"
 
             line1 = line1[:16]
             line2 = line2[:16]
@@ -214,26 +132,32 @@ def lcd_rotation_loop(lcd, stop_event):
 
             if display_tuple != last_display:
                 lcd.display(line1, line2)
-
                 publisher.publish(
                     name_lcd,
                     {"line1": line1, "line2": line2},
                     is_sim_lcd
                 )
-
                 last_display = display_tuple
 
             index += 1
         else:
             display_tuple = ("Waiting DHT...", "")
 
+            if display_tuple != last_display:
+                lcd.display("Waiting DHT...", "")
+                publisher.publish(
+                    name_lcd,
+                    {"line1": "Waiting DHT...", "line2": ""},
+                    is_sim_lcd
+                )
+                last_display = display_tuple
+
         time.sleep(10)
 
 
 
-
 def main():
-    global publisher, settings
+    global publisher, settings, rgb_device
 
     print("Starting PI3 app")
 
@@ -243,13 +167,15 @@ def main():
     threads = []
     stop_event = threading.Event()
 
-    rgb = create_brgb(settings["BRGB"])
+    rgb_device = create_brgb(settings["BRGB"])
     lcd = create_lcd(settings["LCD"])
 
-    # run_ir({**settings["IR"], "delay_sec": poll_delay}, threads, stop_event, ir_cb)
+
+    run_ir(settings["IR"], threads, stop_event, ir_cb)
     run_dht({**settings["DHT1"], "delay_sec": 3}, threads, stop_event, dht1_cb)
     run_dht({**settings["DHT2"], "delay_sec": 3}, threads, stop_event, dht2_cb)
-    # run_dpir({**settings["DPIR3"], "delay_sec": poll_delay}, threads, stop_event, dpir3_cb)
+    #run_dpir({**settings["DPIR3"], "delay_sec": 3}, threads, stop_event, dpir3_cb)
+
 
     rotation_thread = threading.Thread(
         target=lcd_rotation_loop,
@@ -269,7 +195,7 @@ def main():
         t.join()
 
     try:
-        rgb.cleanup()
+        rgb_device.cleanup()
     except:
         pass
 
@@ -279,7 +205,6 @@ def main():
         pass
 
     publisher.stop()
-
 
 
 if __name__ == "__main__":
