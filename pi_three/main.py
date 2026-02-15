@@ -14,6 +14,9 @@ from mqtt_handler import MqttHandler
 publisher = None
 settings = None
 
+recentDhtMetrics = []
+metrics_lock = threading.Lock()
+
 
 def ts():
     t = time.localtime()
@@ -42,7 +45,7 @@ def dht1_cb(payload):
     name = settings["DHT1"]["name"]
 
     publisher.publish(name, payload, is_sim)
-    print_event("[DHT1]", str(payload))
+    #print_event("[DHT1]", str(payload))
 
 
 def dht2_cb(payload):
@@ -50,7 +53,7 @@ def dht2_cb(payload):
     name = settings["DHT2"]["name"]
 
     publisher.publish(name, payload, is_sim)
-    print_event("[DHT2]", str(payload))
+    #print_event("[DHT2]", str(payload))
 
 
 def dpir3_cb(motion: bool):
@@ -171,8 +174,63 @@ def cli_loop(rgb, lcd, stop_event):
 
 
 def mqtt_message_handler(topic, payload):
-    print("from handler")
-    print(payload)
+    global recentDhtMetrics
+
+    if "type" not in payload or payload['type'] != "DHT":
+        return
+
+    with metrics_lock:
+        recentDhtMetrics = payload['metrics']
+
+def lcd_rotation_loop(lcd, stop_event):
+    index = 0
+
+    name_lcd = settings["LCD"]["name"]
+    is_sim_lcd = settings["LCD"]['simulated']
+
+    last_display = None
+
+    while not stop_event.is_set():
+
+        with metrics_lock:
+            metrics_copy = list(recentDhtMetrics)
+
+        if metrics_copy:
+            if index >= len(metrics_copy):
+                index = 0
+
+            metric = metrics_copy[index]
+
+            temp = metric.get("temperature")
+            hum = metric.get("humidity")
+
+            line1 = f"Temp: {temp:.1f} C" if temp is not None else "Temp: --"
+            line2 = f"Hum:  {hum:.1f} %" if hum is not None else "Hum:  --"
+
+            line1 = line1[:16]
+            line2 = line2[:16]
+
+            display_tuple = (line1, line2)
+
+            if display_tuple != last_display:
+                lcd.display(line1, line2)
+
+                publisher.publish(
+                    name_lcd,
+                    {"line1": line1, "line2": line2},
+                    is_sim_lcd
+                )
+
+                last_display = display_tuple
+
+            index += 1
+        else:
+            display_tuple = ("Waiting DHT...", "")
+
+        time.sleep(10)
+
+
+
 
 def main():
     global publisher, settings
@@ -182,41 +240,46 @@ def main():
     settings = load_settings("pi_three")
     publisher = MqttHandler(settings, mqtt_message_handler)
 
-    poll_delay = float(settings.get("delay_sec", 2))
-
     threads = []
     stop_event = threading.Event()
 
-    # --- Actuators ---
     rgb = create_brgb(settings["BRGB"])
     lcd = create_lcd(settings["LCD"])
 
-    # --- Sensors ---
-    run_ir({**settings["IR"], "delay_sec": poll_delay}, threads, stop_event, ir_cb)
+    # run_ir({**settings["IR"], "delay_sec": poll_delay}, threads, stop_event, ir_cb)
     run_dht({**settings["DHT1"], "delay_sec": 3}, threads, stop_event, dht1_cb)
     run_dht({**settings["DHT2"], "delay_sec": 3}, threads, stop_event, dht2_cb)
-    run_dpir({**settings["DPIR3"], "delay_sec": poll_delay}, threads, stop_event, dpir3_cb)
+    # run_dpir({**settings["DPIR3"], "delay_sec": poll_delay}, threads, stop_event, dpir3_cb)
+
+    rotation_thread = threading.Thread(
+        target=lcd_rotation_loop,
+        args=(lcd, stop_event),
+        daemon=True
+    )
+    rotation_thread.start()
+    threads.append(rotation_thread)
 
     try:
-        cli_loop(rgb, lcd, stop_event)
-    finally:
-        try:
-            rgb.cleanup()
-        except Exception:
-            pass
-
-        try:
-            lcd.cleanup()
-        except Exception:
-            pass
-
+        while True:
+            time.sleep(1)
+    except KeyboardInterrupt:
         stop_event.set()
 
-        for t in threads:
-            t.join()
+    for t in threads:
+        t.join()
 
-        publisher.stop()
-        time.sleep(0.2)
+    try:
+        rgb.cleanup()
+    except:
+        pass
+
+    try:
+        lcd.cleanup()
+    except:
+        pass
+
+    publisher.stop()
+
 
 
 if __name__ == "__main__":
