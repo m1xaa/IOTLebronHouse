@@ -20,9 +20,11 @@ public class HouseState {
         return alarmState.get();
     }
 
-    public void setAlarmState(AlarmState newState) {
-        alarmState.set(newState);
+    public boolean setState(AlarmState newState) {
+        AlarmState previous = alarmState.getAndSet(newState);
+        return previous != newState;
     }
+
 
     public boolean armAlarm() {
         AlarmState previous = alarmState.getAndSet(AlarmState.ALARM);

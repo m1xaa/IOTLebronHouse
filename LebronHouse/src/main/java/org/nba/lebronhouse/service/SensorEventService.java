@@ -29,11 +29,19 @@ public class SensorEventService {
                 if (!value.isTextual())
                     return;
                 if (value.asText().equals("LONG_PRESS")) {
-                    doorService.handleLongPress();
+                    doorService.doorUnlocked();
                 } else if (value.asText().equals("RELEASE")) {
-                    doorService.handleRelease();
+                    doorService.doorLocked();
                 }
-                // nothing for press for now
+                else {
+                    doorService.doorActionDetected();
+                }
+            }
+
+            case "DMS" -> {
+                if (!value.isTextual())
+                    return;
+                doorService.verifyPin(value.asText());
             }
         }
 

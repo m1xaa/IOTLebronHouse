@@ -1,34 +1,83 @@
 package org.nba.lebronhouse.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
-import org.nba.lebronhouse.dto.AlarmStateChangedDTO;
+import org.nba.lebronhouse.config.HouseConfig;
 import org.nba.lebronhouse.events.alarm.AlarmStateChangedEvent;
-import org.nba.lebronhouse.messaging.MqttPublisher;
 import org.nba.lebronhouse.state.AlarmState;
 import org.nba.lebronhouse.state.HouseState;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
+
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
 public class DoorService {
 
     private final HouseState houseState;
+    private final HouseConfig houseConfig;
     private final ApplicationEventPublisher eventPublisher;
 
-    public void handleLongPress() {
+    private final ScheduledExecutorService scheduler =
+            Executors.newSingleThreadScheduledExecutor();
+
+    public void doorUnlocked() {
         boolean stateChanged = houseState.armAlarm();
         if (stateChanged)
             eventPublisher.publishEvent(new AlarmStateChangedEvent(AlarmState.ALARM));
     }
 
-    public void handleRelease() {
+    public void doorLocked() {
         boolean stateChanged = houseState.disarmAlarm();
         if (stateChanged)
             eventPublisher.publishEvent(new AlarmStateChangedEvent(AlarmState.DISARMED));
     }
+
+    public void doorActionDetected() {
+        AlarmState current = houseState.getAlarmState();
+        if (current != AlarmState.ARMED)
+            return;
+        houseState.setState(AlarmState.ALARM);
+        eventPublisher.publishEvent(new AlarmStateChangedEvent(AlarmState.ALARM));
+    }
+
+    public void verifyPin(String pin) {
+
+        if (!houseConfig.getPin().equals(pin))
+            return;
+
+        AlarmState current = houseState.getAlarmState();
+
+        if (current == AlarmState.DISARMED) {
+
+            boolean changed = houseState.setState(AlarmState.ARMING);
+            if (changed)
+                eventPublisher.publishEvent(
+                        new AlarmStateChangedEvent(AlarmState.ARMING)
+                );
+
+            scheduler.schedule(() -> {
+                if (houseState.getAlarmState() == AlarmState.ARMING) {
+                    boolean armedChanged =
+                            houseState.setState(AlarmState.ARMED);
+
+                    if (armedChanged)
+                        eventPublisher.publishEvent(
+                                new AlarmStateChangedEvent(AlarmState.ARMED)
+                        );
+                }
+            }, 10, TimeUnit.SECONDS);
+
+        } else {
+            boolean changed = houseState.setState(AlarmState.DISARMED);
+            if (changed)
+                eventPublisher.publishEvent(
+                        new AlarmStateChangedEvent(AlarmState.DISARMED)
+                );
+        }
+    }
+
 
 }
