@@ -1,7 +1,9 @@
 package org.nba.lebronhouse.dto;
 
+import org.nba.lebronhouse.state.AlarmState;
+
 public record AlarmStateChangedDTO(
     String type,
-    boolean isArmed
+    AlarmState state
 ) {
 }

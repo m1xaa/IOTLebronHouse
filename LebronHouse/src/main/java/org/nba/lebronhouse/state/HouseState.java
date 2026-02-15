@@ -39,18 +39,18 @@ public class HouseState {
         return personsInside.get();
     }
 
-    public void incrementPersons() {
+    public void incrementPerson() {
         personsInside.incrementAndGet();
     }
 
-    public void decrementPersons() {
+    public void decrementPerson() {
         personsInside.updateAndGet(current ->
                 current > 0 ? current - 1 : 0
         );
     }
 
 
-    public int getExtraSeconds() {
+    public int getExtraSecond() {
         return extraSeconds.get();
     }
 

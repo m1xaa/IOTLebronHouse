@@ -24,7 +24,7 @@ public class MotionService {
 
         String flux = String.format("""
         from(bucket: "%s")
-          |> range(start: -40s)
+          |> range(start: -15s)
           |> filter(fn: (r) => r._measurement == "%s")
           |> filter(fn: (r) => r._field == "value")
           |> sort(columns: ["_time"])
@@ -49,9 +49,9 @@ public class MotionService {
         double last = distances.get(distances.size() - 1);
 
         if (last < first) {
-            houseState.incrementPersons();
+            houseState.incrementPerson();
         } else if (last > first) {
-            houseState.decrementPersons();
+            houseState.decrementPerson();
         }
     }
 

@@ -132,8 +132,38 @@ def cli_loop(actuators, stop_event):
             print("Unknown command. Type 'help'.")
 
 def mqtt_message_handler(topic, payload):
-    print("from handler")
-    print(payload)
+    if payload.get("type") == "ALARM":
+        handle_alarm_state_changed(payload)
+
+def handle_alarm_state_changed(payload):
+    global actuators, settings
+
+    state = payload.get("state")
+    print_event("[ALARM MESSAGE]", f"state={state}")
+
+    name_dl = settings["DL"]["name"]
+    name_db = settings["DB"]["name"]
+
+    is_sim_dl = settings["DL"].get("simulated", True)
+    is_sim_db = settings["DB"].get("simulated", True)
+
+    if state == "ALARM":
+        actuators["DL"].on()
+        actuators["DB"].on()
+
+        publisher.publish(name_dl, True, is_sim_dl)
+        publisher.publish(name_db, True, is_sim_db)
+
+        print_event("[ALARM ACTION]", "DL + DB ON")
+
+    else:  
+        actuators["DL"].off()
+        actuators["DB"].off()
+
+        publisher.publish(name_dl, False, is_sim_dl)
+        publisher.publish(name_db, False, is_sim_db)
+
+        print_event("[ALARM ACTION]", "DL + DB OFF")
 
 def main():
     global publisher, settings, dl_timer, dl_lock, actuators
