@@ -3,6 +3,8 @@ package org.nba.lebronhouse.state;
 
 import org.springframework.stereotype.Component;
 
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
@@ -12,8 +14,10 @@ public class HouseState {
 
     private final AtomicReference<AlarmState> alarmState =
             new AtomicReference<>(AlarmState.DISARMED);
-    private final AtomicInteger personsInside = new AtomicInteger(0);
+    private final AtomicInteger personInside = new AtomicInteger(0);
     private final AtomicInteger extraSeconds = new AtomicInteger(15);
+
+    private final Set<String> alarmReasons = ConcurrentHashMap.newKeySet();
 
 
     public AlarmState getAlarmState() {
@@ -38,15 +42,15 @@ public class HouseState {
 
 
     public int getPersonInside() {
-        return personsInside.get();
+        return personInside.get();
     }
 
     public void incrementPerson() {
-        personsInside.incrementAndGet();
+        personInside.incrementAndGet();
     }
 
     public void decrementPerson() {
-        personsInside.updateAndGet(current ->
+        personInside.updateAndGet(current ->
                 current > 0 ? current - 1 : 0
         );
     }
@@ -58,5 +62,26 @@ public class HouseState {
 
     public void setExtraSeconds(int seconds) {
         extraSeconds.set(seconds);
+    }
+
+
+    public boolean addAlarmReason(String reason) {
+        return alarmReasons.add(reason);
+    }
+
+    public boolean removeAlarmReason(String reason) {
+        return alarmReasons.remove(reason);
+    }
+
+    public void clearAlarmReasons() {
+        alarmReasons.clear();
+    }
+
+    public boolean hasAlarmReasons() {
+        return !alarmReasons.isEmpty();
+    }
+
+    public Set<String> getAlarmReasons() {
+        return Set.copyOf(alarmReasons);
     }
 }

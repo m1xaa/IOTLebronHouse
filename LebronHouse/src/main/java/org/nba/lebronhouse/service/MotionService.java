@@ -64,15 +64,25 @@ public class MotionService {
         if (houseState.getPersonInside() > 0)
             return;
         AlarmState current = houseState.getAlarmState();
-        if (current.equals(AlarmState.ALARM))
+        if (!current.equals(AlarmState.ARMED))
             return;
-        houseState.setState(AlarmState.ALARM);
-        eventPublisher.publishEvent(new AlarmStateChangedEvent(AlarmState.ALARM));
+
+        boolean stateChanged = houseState.setState(AlarmState.ALARM);
+        if (stateChanged) {
+            houseState.addAlarmReason("DPIR");
+            eventPublisher.publishEvent(new AlarmStateChangedEvent(AlarmState.ALARM));
+        }
     }
 
     public void handleGsgMovement() {
-        boolean stateChanged = houseState.armAlarm();
-        if (stateChanged)
+        AlarmState current = houseState.getAlarmState();
+        if (!current.equals(AlarmState.ARMED))
+            return;
+
+        boolean stateChanged = houseState.setState(AlarmState.ALARM);
+        if (stateChanged) {
+            houseState.addAlarmReason("GSG");
             eventPublisher.publishEvent(new AlarmStateChangedEvent(AlarmState.ALARM));
+        }
     }
 }

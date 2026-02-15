@@ -41,12 +41,13 @@ public class SensorEventService {
                 if (!value.isTextual())
                     return;
                 if (value.asText().equals("LONG_PRESS")) {
-                    doorService.doorUnlocked();
+                    doorService.unlockDoor();
                 } else if (value.asText().equals("RELEASE")) {
-                    doorService.doorLocked();
+                    doorService.lockDoor();
                 }
                 else {
-                    doorService.doorActionDetected();
+                    doorService.unlockDoor();
+                    //doorService.doorActionDetected();   // check if this is the correct implementation
                 }
             }
 

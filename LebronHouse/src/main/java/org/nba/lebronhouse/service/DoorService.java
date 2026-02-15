@@ -23,25 +23,40 @@ public class DoorService {
     private final ScheduledExecutorService scheduler =
             Executors.newSingleThreadScheduledExecutor();
 
-    public void doorUnlocked() {
-        boolean stateChanged = houseState.armAlarm();
-        if (stateChanged)
-            eventPublisher.publishEvent(new AlarmStateChangedEvent(AlarmState.ALARM));
-    }
-
-    public void doorLocked() {
-        boolean stateChanged = houseState.disarmAlarm();
-        if (stateChanged)
-            eventPublisher.publishEvent(new AlarmStateChangedEvent(AlarmState.DISARMED));
-    }
-
-    public void doorActionDetected() {
+    public void unlockDoor() {
         AlarmState current = houseState.getAlarmState();
         if (current != AlarmState.ARMED)
             return;
-        houseState.setState(AlarmState.ALARM);
-        eventPublisher.publishEvent(new AlarmStateChangedEvent(AlarmState.ALARM));
+        boolean stateChanged = houseState.setState(AlarmState.ALARM);
+        if (stateChanged) {
+            houseState.addAlarmReason("DS");
+            eventPublisher.publishEvent(new AlarmStateChangedEvent(AlarmState.ALARM));
+        }
     }
+
+    public void lockDoor() {
+        AlarmState current = houseState.getAlarmState();
+        if (current != AlarmState.ALARM)
+            return;
+        boolean stateChanged = houseState.setState(AlarmState.ARMED);
+        if (stateChanged) {
+            houseState.removeAlarmReason("DS");
+            if (houseState.hasAlarmReasons())
+                return;
+            eventPublisher.publishEvent(new AlarmStateChangedEvent(AlarmState.ARMED));
+        }
+    }
+
+//    public void doorActionDetected() {
+//        AlarmState current = houseState.getAlarmState();
+//        if (current != AlarmState.ARMED)
+//            return;
+//        boolean stateChanged = houseState.setState(AlarmState.ALARM);
+//        if (stateChanged) {
+//            houseState.addAlarmReason("DS");
+//            eventPublisher.publishEvent(new AlarmStateChangedEvent(AlarmState.ALARM));
+//        }
+//    }
 
     public void verifyPin(String pin) {
 
@@ -72,10 +87,10 @@ public class DoorService {
 
         } else {
             boolean changed = houseState.setState(AlarmState.DISARMED);
-            if (changed)
-                eventPublisher.publishEvent(
-                        new AlarmStateChangedEvent(AlarmState.DISARMED)
-                );
+            if (changed) {
+                eventPublisher.publishEvent(new AlarmStateChangedEvent(AlarmState.DISARMED));
+                houseState.clearAlarmReasons();
+            }
         }
     }
 
