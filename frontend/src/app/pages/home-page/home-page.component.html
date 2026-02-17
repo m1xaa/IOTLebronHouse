@@ -1,11 +1,64 @@
-<div class="cards">
-  <div 
-    *ngFor="let state of states"
-    class="card"
-    [class.active]="isActive(state)"
-    [class.disabled]="isDisabled(state)"
-    (click)="onSelect(state)"
-  >
-    {{ state }}
-  </div>
+<div class="layout">
+
+
+  <nav class="navbar">
+    <div class="nav-logo">LEBRON HOUSE</div>
+    <div class="nav-links">
+      <button routerLink="/pi1">PI 1</button>
+      <button routerLink="/pi2">PI 2</button>
+      <button routerLink="/pi3">PI 3</button>
+    </div>
+  </nav>
+
+  <section class="alarm-section">
+    <h2>Alarm Control</h2>
+
+    <div class="cards">
+      <div 
+        *ngFor="let state of states"
+        class="card"
+        [class.active]="isActive(state)"
+        [class.disabled]="isDisabled(state)"
+        (click)="onSelect(state)"
+      >
+        <div class="card-title">{{ state }}</div>
+      </div>
+    </div>
+  </section>
+
+
+  <section class="devices-section">
+
+    <h2>Devices Control</h2>
+
+    <div class="devices-grid">
+
+
+      <div class="device-card">
+        <h3>7-Segment Display</h3>
+
+        <label>Set Value</label>
+        <input type="number" min="0" max="9999" [(ngModel)]="displayValue"/>
+        <button (click)="setDisplay()">Set Display</button>
+
+        <div class="divider"></div>
+
+        <label>Seconds Added On Button Press</label>
+        <div class="seconds-control">
+          <input type="number" min="1" max="60" [(ngModel)]="secondsIncrement"/>
+          <button (click)="setSecondsIncrement()">Apply</button>
+        </div>
+      </div>
+
+
+
+      <div class="device-card">
+        <h3>BRGB Light</h3>
+        <input type="color" [(ngModel)]="selectedColor"/>
+        <button (click)="setColor()">Set Color</button>
+      </div>
+
+    </div>
+  </section>
+
 </div>
