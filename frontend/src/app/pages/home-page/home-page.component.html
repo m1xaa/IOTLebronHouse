@@ -1,0 +1,11 @@
+<div class="cards">
+  <div 
+    *ngFor="let state of states"
+    class="card"
+    [class.active]="isActive(state)"
+    [class.disabled]="isDisabled(state)"
+    (click)="onSelect(state)"
+  >
+    {{ state }}
+  </div>
+</div>
