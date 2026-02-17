@@ -16,6 +16,11 @@ from mqtt_handler import MqttHandler
 publisher = None
 settings = None
 
+seconds_increment = 10
+increment_lock = threading.Lock()
+
+display_device = None
+
 
 def ts():
     t = time.localtime()
@@ -29,10 +34,33 @@ def print_event(label: str, payload: str):
 
 
 def btn_cb():
+    global seconds_increment
+
     is_sim = settings["BTN"]["simulated"]
     name = settings["BTN"]["name"]
+
     publisher.publish(name, True, is_sim)
     print_event("[BTN] (Button)", f"pressed={True}")
+
+    if not display_device:
+        return
+
+    if display_device._blinking:
+        display_device.stop_blink()
+        display_device.set_time(0)
+        print_event("[4SD]", "blink stopped")
+        return
+
+    if display_device._running:
+        with increment_lock:
+            inc = seconds_increment
+
+        display_device.add_seconds(inc)
+        print_event("[4SD]", f"added={inc}")
+    else:
+        print_event("[4SD]", "ignored (not running)")
+
+
 
 
 def dht3_cb(payload):
@@ -75,90 +103,32 @@ def dus2_cb(distance_cm):
     print_event("[DUS2] (Ultrasonic)", f"distance_cm={distance_cm}")
 
 
-# ===== CLI (za 4SD kontrolu) =====
-
-def cli_loop(display, stop_event):
-    help_text = (
-        "\nCommands:\n"
-        "  set <seconds>\n"
-        "  add <seconds>\n"
-        "  start\n"
-        "  stop\n"
-        "  blink\n"
-        "  clear\n"
-        "  help\n"
-        "  exit\n"
-    )
-
-    print(help_text)
-
-    name = settings['4SD']["name"]
-    simulated = settings['4SD']["simulated"]
-
-    while not stop_event.is_set():
-        try:
-            cmd = input("pi2> ").strip()
-        except (EOFError, KeyboardInterrupt):
-            cmd = "exit"
-
-        if not cmd:
-            continue
-
-        parts = cmd.split()
-        c = parts[0].lower()
-
-        if c == "help":
-            print(help_text)
-
-        elif c == "set" and len(parts) == 2:
-            try:
-                sec = int(parts[1])
-                display.set_time(sec)
-                publisher.publish(name, sec, simulated)
-                print_event("[4SD]", f"set={sec}")
-            except ValueError:
-                print("Invalid number.")
-
-        elif c == "add" and len(parts) == 2:
-            try:
-                sec = int(parts[1])
-                display.add_seconds(sec)
-                publisher.publish(name, sec, simulated)
-                print_event("[4SD]", f"add={sec}")
-            except ValueError:
-                print("Invalid number.")
-
-        elif c == "start":
-            display.start()
-            print_event("[4SD]", "started")
-
-        elif c == "stop":
-            display.stop()
-            print_event("[4SD]", "stopped")
-
-        elif c == "blink":
-            display.blink()
-            print_event("[4SD]", "blinking")
-
-        elif c == "clear":
-            display.set_time(0)
-            display.stop()
-            print_event("[4SD]", "cleared")
-
-        elif c == "exit":
-            stop_event.set()
-
-        else:
-            print("Unknown command.")
-
-
 
 def mqtt_message_handler(topic, payload):
-    print("from handler")
-    print(payload)
+    global seconds_increment, publisher, settings
+
+    if 'type' not in payload:
+        return
+
+
+    if payload['type'] == "SD4":
+        seconds = payload.get("seconds")
+        if seconds is not None and display_device:
+            display_device.set_time(int(seconds))
+            display_device.start()
+            publisher.publish(settings['4SD']['name'], seconds, settings['4SD']['simulated'])
+            print_event("[SD4]", f"set_time={seconds}")
+
+    elif payload['type'] == "BTN":
+        sec = payload.get("seconds")
+        if sec is not None:
+            with increment_lock:
+                seconds_increment = int(sec)
+            print_event("[BTN CONFIG]", f"increment={seconds_increment}")
+
 
 def main():
-    global publisher, settings
+    global publisher, settings, display_device
 
     print("Starting PI2 app")
 
@@ -170,32 +140,34 @@ def main():
     threads = []
     stop_event = threading.Event()
 
-    # --- Actuator ---
-    display = create_4sd(settings["4SD"])
+    display_device = create_4sd(settings["4SD"])
 
 
-    # run_btn({**settings["BTN"], "delay_sec": 0.1}, threads, stop_event, btn_cb)
-    run_dht({**settings["DHT3"], "delay_sec": 3}, threads, stop_event, dht3_cb)
+    run_btn({**settings["BTN"], "delay_sec": 0.1}, threads, stop_event, btn_cb)
+    #run_dht({**settings["DHT3"], "delay_sec": 3}, threads, stop_event, dht3_cb)
     # run_gsg({**settings["GSG"], "delay_sec": 0.2}, threads, stop_event, gsg_cb)
     # run_ds({**settings["DS2"], "delay_sec": poll_delay}, threads, stop_event, ds2_cb)
     # run_dpir({**settings["DPIR2"], "delay_sec": poll_delay}, threads, stop_event, dpir2_cb)
     # run_dus({**settings["DUS2"], "delay_sec": poll_delay}, threads, stop_event, dus2_cb)
 
     try:
-        cli_loop(display, stop_event)
-    finally:
-        try:
-            display.cleanup()
-        except Exception:
-            pass
-
+        while True:
+            time.sleep(1)
+    except KeyboardInterrupt:
         stop_event.set()
+        
+    try:
+        display_device.cleanup()
+    except Exception:
+        pass
 
-        for t in threads:
-            t.join()
+    stop_event.set()
 
-        publisher.stop()
-        time.sleep(0.2)
+    for t in threads:
+        t.join()
+
+    publisher.stop()
+    time.sleep(0.2)
 
 
 if __name__ == "__main__":

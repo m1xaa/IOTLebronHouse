@@ -5,6 +5,7 @@ import { AlarmService } from '../../services/alarm.service';
 import { FormsModule } from '@angular/forms';
 import { BrgbService } from '../../services/brgb.service';
 import { ToastrService } from 'ngx-toastr';
+import { Sd4Service } from '../../services/sd4.service';
 
 @Component({
   selector: 'app-home-page',
@@ -28,6 +29,7 @@ export class HomePageComponent implements OnInit {
   constructor(
     private alarmService: AlarmService,
     private brgbService: BrgbService,
+    private sd4Service: Sd4Service,
     private toastr: ToastrService
   ) {}
 
@@ -54,11 +56,19 @@ export class HomePageComponent implements OnInit {
   }
 
   setDisplay() {
-    console.log("Set display:", this.displayValue);
+    const rounded = Math.round(this.displayValue);
+    this.sd4Service.setTimer({seconds: rounded}).subscribe({
+      next: () => this.toastr.success('SD4 timer set'),
+      error: () => this.toastr.error('Failed to set SD4 timer')
+    });
   }
 
   setSecondsIncrement() {
-    console.log("Set seconds increment:", this.secondsIncrement);
+    const rounded = Math.round(this.secondsIncrement);
+    this.sd4Service.setSecondsIncrement({seconds: rounded}).subscribe({
+      next: () => this.toastr.success('Set seconds increment'),
+      error: () => this.toastr.error('Failed to set seconds increment')
+    });
   }
 
   setColor() {
