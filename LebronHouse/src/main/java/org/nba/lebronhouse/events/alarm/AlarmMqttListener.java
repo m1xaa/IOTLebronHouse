@@ -2,7 +2,7 @@ package org.nba.lebronhouse.events.alarm;
 
 
 import lombok.RequiredArgsConstructor;
-import org.nba.lebronhouse.dto.AlarmStateChangedDTO;
+import org.nba.lebronhouse.dto.pi.AlarmStateChangedDTO;
 import org.nba.lebronhouse.messaging.MqttPublisher;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.event.EventListener;

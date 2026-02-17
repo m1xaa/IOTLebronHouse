@@ -92,11 +92,15 @@ def dpir3_cb(motion: bool):
 def mqtt_message_handler(topic, payload):
     global recentDhtMetrics
 
+    if "type" not in payload:
+        return
+
     if payload.get("type") == "DHT":
         with metrics_lock:
             recentDhtMetrics = payload["metrics"]
 
-    # ovde mora doci kontrolisanje rgb preko weba jos jedan event
+    if payload.get("type") == "BRGB":
+        set_rgb_state(payload['red'], payload['green'], payload['blue'])
 
 
 
@@ -171,9 +175,9 @@ def main():
     lcd = create_lcd(settings["LCD"])
 
 
-    run_ir(settings["IR"], threads, stop_event, ir_cb)
-    run_dht({**settings["DHT1"], "delay_sec": 3}, threads, stop_event, dht1_cb)
-    run_dht({**settings["DHT2"], "delay_sec": 3}, threads, stop_event, dht2_cb)
+    #run_ir(settings["IR"], threads, stop_event, ir_cb)
+    # run_dht({**settings["DHT1"], "delay_sec": 3}, threads, stop_event, dht1_cb)
+    # run_dht({**settings["DHT2"], "delay_sec": 3}, threads, stop_event, dht2_cb)
     #run_dpir({**settings["DPIR3"], "delay_sec": 3}, threads, stop_event, dpir3_cb)
 
 

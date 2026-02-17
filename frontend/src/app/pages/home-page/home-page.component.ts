@@ -3,6 +3,8 @@ import { AlarmState } from '../../models/alarm/alarm-state';
 import { CommonModule } from '@angular/common';
 import { AlarmService } from '../../services/alarm.service';
 import { FormsModule } from '@angular/forms';
+import { BrgbService } from '../../services/brgb.service';
+import { ToastrService } from 'ngx-toastr';
 
 @Component({
   selector: 'app-home-page',
@@ -23,7 +25,11 @@ export class HomePageComponent implements OnInit {
   states = Object.values(AlarmState);
   currentState: AlarmState | null = null;
 
-  constructor(private alarmService: AlarmService) {}
+  constructor(
+    private alarmService: AlarmService,
+    private brgbService: BrgbService,
+    private toastr: ToastrService
+  ) {}
 
   ngOnInit(): void {
     this.alarmService.init();
@@ -56,6 +62,29 @@ export class HomePageComponent implements OnInit {
   }
 
   setColor() {
-    console.log("Set color:", this.selectedColor);
+    const { red, green, blue } = this.hexToNormalizedRgb(this.selectedColor);
+
+    this.brgbService.setBrgbColor({ red, green, blue })
+      .subscribe({
+      next: () => this.toastr.success('BRGB color updated'),
+      error: () => this.toastr.error('Failed to update BRGB color')
+      });
   }
+
+  private hexToNormalizedRgb(hex: string): { red: number; green: number; blue: number } {
+  const cleanHex = hex.replace('#', '');
+
+  const r = parseInt(cleanHex.substring(0, 2), 16);
+  const g = parseInt(cleanHex.substring(2, 4), 16);
+  const b = parseInt(cleanHex.substring(4, 6), 16);
+
+  return {
+    red: r / 255,
+    green: g / 255,
+    blue: b / 255
+  };
 }
+
+}
+
+

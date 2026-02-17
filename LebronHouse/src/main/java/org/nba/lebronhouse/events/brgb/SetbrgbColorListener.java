@@ -1,8 +1,9 @@
-package org.nba.lebronhouse.events.dht;
-
+package org.nba.lebronhouse.events.brgb;
 
 import lombok.RequiredArgsConstructor;
+import org.nba.lebronhouse.dto.pi.BrgbColorChangedDTO;
 import org.nba.lebronhouse.dto.pi.DhtTelemetrySnapshotDTO;
+import org.nba.lebronhouse.events.dht.DhtTelemetrySnapshotBatchEvent;
 import org.nba.lebronhouse.messaging.MqttPublisher;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.event.EventListener;
@@ -12,7 +13,7 @@ import tools.jackson.databind.ObjectMapper;
 
 @Component
 @RequiredArgsConstructor
-public class DhtSnapshotTelemetryListener {
+public class SetbrgbColorListener {
 
     private final MqttPublisher mqttPublisher;
     private final ObjectMapper objectMapper;
@@ -22,8 +23,8 @@ public class DhtSnapshotTelemetryListener {
 
     @Async
     @EventListener
-    public void handleAlarmStateChanged(DhtTelemetrySnapshotBatchEvent event) {
-        DhtTelemetrySnapshotDTO dto = new DhtTelemetrySnapshotDTO("DHT", event.metrics());
+    public void handleBrgbColorChanged(SetBrgbColorEvent event) {
+        BrgbColorChangedDTO dto = new BrgbColorChangedDTO("BRGB", event.red(), event.green(), event.blue());
         String json = objectMapper.writeValueAsString(dto);
         mqttPublisher.publish(outboundTopic, json);
     }

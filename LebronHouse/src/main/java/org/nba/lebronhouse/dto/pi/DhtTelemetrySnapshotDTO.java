@@ -1,4 +1,4 @@
-package org.nba.lebronhouse.dto;
+package org.nba.lebronhouse.dto.pi;
 
 import org.nba.lebronhouse.events.dht.DhtTelemetrySnapshotEvent;
 
