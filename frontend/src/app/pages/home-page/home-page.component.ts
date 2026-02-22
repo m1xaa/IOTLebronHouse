@@ -26,6 +26,8 @@ export class HomePageComponent implements OnInit {
   states = Object.values(AlarmState);
   currentState: AlarmState | null = null;
 
+  currentPersonCount: number | null = null;
+
   constructor(
     private alarmService: AlarmService,
     private brgbService: BrgbService,
@@ -36,8 +38,18 @@ export class HomePageComponent implements OnInit {
   ngOnInit(): void {
     this.alarmService.init();
 
+    this.sd4Service.getSecondsIncrement().subscribe({
+      next: seconds => {
+        this.secondsIncrement = seconds;
+      }
+    });
+
     this.alarmService.state$.subscribe(state => {
       this.currentState = state;
+    });
+
+    this.alarmService.personCountState$.subscribe(personCount => {
+      this.currentPersonCount = personCount;
     });
   }
 
@@ -79,21 +91,31 @@ export class HomePageComponent implements OnInit {
       next: () => this.toastr.success('BRGB color updated'),
       error: () => this.toastr.error('Failed to update BRGB color')
       });
-  }
+    }
 
   private hexToNormalizedRgb(hex: string): { red: number; green: number; blue: number } {
-  const cleanHex = hex.replace('#', '');
+    const cleanHex = hex.replace('#', '');
 
-  const r = parseInt(cleanHex.substring(0, 2), 16);
-  const g = parseInt(cleanHex.substring(2, 4), 16);
-  const b = parseInt(cleanHex.substring(4, 6), 16);
+    const r = parseInt(cleanHex.substring(0, 2), 16);
+    const g = parseInt(cleanHex.substring(2, 4), 16);
+    const b = parseInt(cleanHex.substring(4, 6), 16);
 
-  return {
-    red: r / 255,
-    green: g / 255,
-    blue: b / 255
-  };
-}
+    return {
+      red: r / 255,
+      green: g / 255,
+      blue: b / 255
+    };
+  }
+
+  resetPersonCount() {
+    this.alarmService.resetPersonCount().subscribe({
+      next: () => {
+        this.currentPersonCount = 0;
+        this.toastr.success('Person count reset');
+      },
+      error: () => this.toastr.error('Failed to reset person count')
+    });
+  }
 
 }
 

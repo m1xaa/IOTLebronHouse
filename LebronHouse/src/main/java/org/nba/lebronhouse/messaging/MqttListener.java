@@ -83,7 +83,7 @@ public class MqttListener {
 
                         sensorEventService.handleEvent(piId, component, simulated, valueNode);
 
-                        System.out.println("Saved: " + component);
+//                        System.out.println("Saved: " + component);
                     }
                 }
 

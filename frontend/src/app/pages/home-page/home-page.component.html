@@ -26,6 +26,19 @@
     </div>
   </section>
 
+  <div class="person-count-panel">
+    <div class="person-count-info">
+      <div class="person-count-label">People in object</div>
+      <div class="person-count-value">
+        {{ currentPersonCount ?? 0 }}
+      </div>
+    </div>
+
+    <button class="reset-btn" (click)="resetPersonCount()">
+      Reset
+    </button>
+  </div>
+
 
   <section class="devices-section">
 

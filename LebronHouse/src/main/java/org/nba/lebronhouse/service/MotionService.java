@@ -4,6 +4,7 @@ import com.influxdb.client.InfluxDBClient;
 import lombok.RequiredArgsConstructor;
 import org.nba.lebronhouse.config.InfluxConfig;
 import org.nba.lebronhouse.events.alarm.AlarmStateChangedEvent;
+import org.nba.lebronhouse.events.motion.CheckRecentMotionEvent;
 import org.nba.lebronhouse.state.AlarmState;
 import org.nba.lebronhouse.state.HouseState;
 import org.springframework.beans.factory.annotation.Value;
@@ -50,17 +51,23 @@ public class MotionService {
             return;
         }
 
-        double first = distances.get(0);
+        double first = distances.get(distances.size() - 2);
         double last = distances.get(distances.size() - 1);
+
+        System.out.println("first: " + first);
+        System.out.println("last: " + last);
 
         if (last < first) {
             houseState.incrementPerson();
         } else if (last > first) {
             houseState.decrementPerson();
         }
+
+        eventPublisher.publishEvent(new CheckRecentMotionEvent(houseState.getPersonInside()));
     }
 
     public void motionDetected() {
+        System.out.println("Motion detected, person inside: " + houseState.getPersonInside());
         if (houseState.getPersonInside() > 0)
             return;
         AlarmState current = houseState.getAlarmState();

@@ -23,4 +23,8 @@ export class Sd4Service {
   setSecondsIncrement(request: SetSecondsIncrementRequest): Observable<void> {
     return this.http.put<void>(`${this.baseUrl}/api/sd4/seconds`, request);
   }
+
+  getSecondsIncrement(): Observable<number> {
+    return this.http.get<number>(`${this.baseUrl}/api/sd4/seconds`);
+  }
 }

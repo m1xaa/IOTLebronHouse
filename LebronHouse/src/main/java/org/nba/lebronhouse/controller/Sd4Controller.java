@@ -7,6 +7,7 @@ import org.nba.lebronhouse.dto.requests.SetTimerRequest;
 import org.nba.lebronhouse.service.Sd4Service;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -28,5 +29,10 @@ public class Sd4Controller {
     public ResponseEntity<Void> setSecondsIncrement(@RequestBody SetSecondsIncrementRequest request) {
         service.setSecondsIncrement(request);
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/seconds")
+    public ResponseEntity<Integer> getSecondsIncrement() {
+        return ResponseEntity.ok(service.getSecondsIncrement());
     }
 }

@@ -21,7 +21,11 @@ public class Sd4Service {
     }
 
     public void setSecondsIncrement(SetSecondsIncrementRequest request) {
-        houseState.setExtraSeconds(request.seconds());
+        houseState.setSecondsIncrement(request.seconds());
         eventPublisher.publishEvent(new SetSecondsIncrementEvent(request.seconds()));
+    }
+
+    public int getSecondsIncrement() {
+        return houseState.getSecondsIncrement();
     }
 }

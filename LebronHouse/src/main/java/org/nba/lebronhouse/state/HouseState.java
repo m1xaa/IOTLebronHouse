@@ -15,7 +15,7 @@ public class HouseState {
     private final AtomicReference<AlarmState> alarmState =
             new AtomicReference<>(AlarmState.DISARMED);
     private final AtomicInteger personInside = new AtomicInteger(0);
-    private final AtomicInteger extraSeconds = new AtomicInteger(15);
+    private final AtomicInteger secondsIncrement = new AtomicInteger(15);
 
     private final Set<String> alarmReasons = ConcurrentHashMap.newKeySet();
 
@@ -45,6 +45,8 @@ public class HouseState {
         return personInside.get();
     }
 
+    public void resetPersonCount() {personInside.set(0);}
+
     public void incrementPerson() {
         personInside.incrementAndGet();
     }
@@ -56,12 +58,12 @@ public class HouseState {
     }
 
 
-    public int getExtraSecond() {
-        return extraSeconds.get();
+    public int getSecondsIncrement() {
+        return secondsIncrement.get();
     }
 
-    public void setExtraSeconds(int seconds) {
-        extraSeconds.set(seconds);
+    public void setSecondsIncrement(int seconds) {
+        secondsIncrement.set(seconds);
     }
 
 

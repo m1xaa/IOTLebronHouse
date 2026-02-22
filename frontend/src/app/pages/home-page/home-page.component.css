@@ -137,3 +137,42 @@ h2 {
 .seconds-control input {
   flex: 1;
 }
+.person-count-panel {
+  margin-top: 25px;
+  padding: 18px 20px;
+  background: #1e293b;
+  border-radius: 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  border: 1px solid #334155;
+}
+
+.person-count-label {
+  font-size: 12px;
+  letter-spacing: 0.6px;
+  color: #cbd5e1;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+}
+
+.person-count-value {
+  font-size: 28px;
+  font-weight: 600;
+  color: white;
+}
+
+.reset-btn {
+  padding: 10px 16px;
+  border-radius: 8px;
+  border: none;
+  background: #ef4444;
+  color: white;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.reset-btn:hover {
+  background: #dc2626;
+}
