@@ -69,6 +69,19 @@
         <button (click)="setColor()">Set Color</button>
       </div>
 
+      <div class="device-card camera-card">
+        <h3>PI1 Camera</h3>
+
+        <div class="camera-wrap" *ngIf="showCamera">
+          <img [src]="pi1CameraUrl" alt="PI1 camera stream">
+        </div>
+
+        <button (click)="toggleCamera()">
+          {{ showCamera ? 'Hide camera' : 'Show camera' }}
+        </button>
+      </div>
+
+
     </div>
   </section>
 
