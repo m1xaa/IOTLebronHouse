@@ -28,7 +28,6 @@ def run_membrane_loop(rows, cols, delay, callback, stop_event):
                 if GPIO.input(c) == GPIO.HIGH:
                     key = KEYMAP[i][j]
 
-                    # prihvataj samo cifre
                     if key.isdigit():
                         pin_buffer += key
 
@@ -36,7 +35,11 @@ def run_membrane_loop(rows, cols, delay, callback, stop_event):
                             callback(pin_buffer)
                             pin_buffer = ""
 
-                    time.sleep(0.3)  # debounce
+                    # cekaj otpustanje
+                    while GPIO.input(c) == GPIO.HIGH:
+                        time.sleep(0.01)
+
+                    time.sleep(0.1)
 
             GPIO.output(r, GPIO.LOW)
 

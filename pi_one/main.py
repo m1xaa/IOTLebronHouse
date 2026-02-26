@@ -185,9 +185,9 @@ def main():
 
 
     #run_ds({**settings["DS1"], "delay_sec": poll_delay}, threads, stop_event, ds1_cb)
-    run_dpir({**settings["DPIR1"], "delay_sec": poll_delay}, threads, stop_event, dpir1_cb)
-    run_dus({**settings["DUS1"], "delay_sec": poll_delay}, threads, stop_event, dus1_cb)
-    #run_dms(settings["DMS"], threads, stop_event, dms_cb)
+    #run_dpir({**settings["DPIR1"], "delay_sec": poll_delay}, threads, stop_event, dpir1_cb)
+    #run_dus({**settings["DUS1"], "delay_sec": poll_delay}, threads, stop_event, dus1_cb)
+    run_dms(settings["DMS"], threads, stop_event, dms_cb)
 
     try:
         cli_loop(actuators, stop_event)

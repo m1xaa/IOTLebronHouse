@@ -170,7 +170,7 @@ def main():
 
     threads = []
     stop_event = threading.Event()
-
+    
     rgb_device = create_brgb(settings["BRGB"])
     lcd = create_lcd(settings["LCD"])
 

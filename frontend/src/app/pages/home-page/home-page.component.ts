@@ -27,7 +27,7 @@ export class HomePageComponent implements OnInit {
   currentState: AlarmState | null = null;
 
   currentPersonCount: number | null = null;
-  pi1CameraUrl = 'http://<raspberry_pi_ip>:8080/?action=stream';
+  pi1CameraUrl = 'http://192.168.107.146:8080/?action=stream';
 
   showCamera = true;
   toggleCamera() { this.showCamera = !this.showCamera; }
