@@ -26,6 +26,11 @@
     </div>
   </section>
 
+  <section class="metrics-section">
+    <h2>Alarm history</h2>
+    <app-grafana-embed dashboardUid="alarm-dash" [smaller]="true"></app-grafana-embed>
+  </section>
+
   <div class="person-count-panel">
     <div class="person-count-info">
       <div class="person-count-label">People in object</div>

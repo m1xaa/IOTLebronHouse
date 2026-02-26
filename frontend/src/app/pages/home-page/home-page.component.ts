@@ -6,14 +6,16 @@ import { FormsModule } from '@angular/forms';
 import { BrgbService } from '../../services/brgb.service';
 import { ToastrService } from 'ngx-toastr';
 import { Sd4Service } from '../../services/sd4.service';
+import { GrafanaEmbedComponent } from "../grafana-embed/grafana-embed.component";
 
 @Component({
   selector: 'app-home-page',
   standalone: true,
   imports: [
     CommonModule,
-    FormsModule
-  ],
+    FormsModule,
+    GrafanaEmbedComponent
+],
   templateUrl: './home-page.component.html',
   styleUrl: './home-page.component.css'
 })
