@@ -1,0 +1,43 @@
+<section class="alarm-section">
+  <h2>Alarm Control (PI1)</h2>
+
+  <div class="cards">
+    <div
+      *ngFor="let state of states"
+      class="card"
+      [class.active]="isActive(state)"
+      [class.disabled]="isDisabled(state)"
+      (click)="onSelect(state)"
+    >
+      <div class="card-title">{{ state }}</div>
+    </div>
+  </div>
+</section>
+
+<div class="person-count-panel">
+  <div class="person-count-info">
+    <div class="person-count-label">People in object</div>
+    <div class="person-count-value">{{ currentPersonCount ?? 0 }}</div>
+  </div>
+
+  <button class="reset-btn" (click)="resetPersonCount()">Reset</button>
+</div>
+
+<section class="devices-section">
+  <h2>PI1 Camera</h2>
+
+  <div class="device-card camera-card">
+    <div class="camera-wrap" *ngIf="showCamera">
+      <img [src]="pi1CameraUrl" alt="PI1 camera stream">
+    </div>
+
+    <button (click)="toggleCamera()">
+      {{ showCamera ? 'Hide camera' : 'Show camera' }}
+    </button>
+  </div>
+</section>
+
+<section class="metrics-section">
+  <h2>Live Metrics (PI1)</h2>
+  <app-grafana-embed dashboardUid="lebronhouse-pi" piId="PI1"></app-grafana-embed>
+</section>

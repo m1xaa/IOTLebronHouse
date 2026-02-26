@@ -1,0 +1,26 @@
+<section class="devices-section">
+  <h2>Devices Control (PI2)</h2>
+
+  <div class="devices-grid">
+    <div class="device-card">
+      <h3>4-Digit Display (4SD)</h3>
+
+      <label>Set Timer (seconds)</label>
+      <input type="number" min="0" max="9999" [(ngModel)]="displayValue" />
+      <button (click)="setDisplay()">Set Display</button>
+
+      <div class="divider"></div>
+
+      <label>Seconds Added On Button Press</label>
+      <div class="seconds-control">
+        <input type="number" min="1" max="60" [(ngModel)]="secondsIncrement" />
+        <button (click)="setSecondsIncrement()">Apply</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="metrics-section">
+  <h2>Live Metrics (PI2)</h2>
+  <app-grafana-embed dashboardUid="lebronhouse-pi2" piId="PI2"></app-grafana-embed>
+</section>

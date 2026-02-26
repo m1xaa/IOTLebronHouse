@@ -1,0 +1,16 @@
+<section class="devices-section">
+  <h2>Devices Control (PI3)</h2>
+
+  <div class="devices-grid">
+    <div class="device-card">
+      <h3>BRGB Light</h3>
+      <input type="color" [(ngModel)]="selectedColor" />
+      <button (click)="setColor()">Set Color</button>
+    </div>
+  </div>
+</section>
+
+<section class="metrics-section">
+  <h2>Live Metrics (PI3)</h2>
+  <app-grafana-embed dashboardUid="lebronhouse-pi3" piId="PI3"></app-grafana-embed>
+</section>

@@ -1,0 +1,36 @@
+.layout {
+  min-height: 100vh;
+  background: #0f172a;
+  color: white;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 40px;
+  background: #1e293b;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+}
+
+.nav-logo {
+  font-weight: 600;
+  font-size: 18px;
+  letter-spacing: 1px;
+}
+
+.nav-links button {
+  margin-left: 10px;
+  padding: 8px 16px;
+  background: #334155;
+  border: none;
+  color: white;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.nav-links button:hover {
+  background: #475569;
+}
