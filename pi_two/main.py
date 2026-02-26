@@ -76,7 +76,7 @@ def gsg_cb(detected: bool):
     name = settings["GSG"]["name"]
 
     publisher.publish(name, detected, is_sim)
-    print_event("[GSG] (Gas Sensor)", str(detected))
+    print_event("[GSG] (Gyro movement)", str(detected))
 
 
 def ds2_cb(event):
@@ -144,11 +144,11 @@ def main():
 
 
     run_btn({**settings["BTN"], "delay_sec": 0.1}, threads, stop_event, btn_cb)
-    #run_dht({**settings["DHT3"], "delay_sec": 3}, threads, stop_event, dht3_cb)
-    # run_gsg({**settings["GSG"], "delay_sec": 0.2}, threads, stop_event, gsg_cb)
-    # run_ds({**settings["DS2"], "delay_sec": poll_delay}, threads, stop_event, ds2_cb)
-    # run_dpir({**settings["DPIR2"], "delay_sec": poll_delay}, threads, stop_event, dpir2_cb)
-    # run_dus({**settings["DUS2"], "delay_sec": poll_delay}, threads, stop_event, dus2_cb)
+    run_dht({**settings["DHT3"], "delay_sec": 3}, threads, stop_event, dht3_cb)
+    run_gsg({**settings["GSG"], "delay_sec": 0.2}, threads, stop_event, gsg_cb)
+    run_ds({**settings["DS2"], "delay_sec": poll_delay}, threads, stop_event, ds2_cb)
+    run_dpir({**settings["DPIR2"], "delay_sec": poll_delay}, threads, stop_event, dpir2_cb)
+    run_dus({**settings["DUS2"], "delay_sec": poll_delay}, threads, stop_event, dus2_cb)
 
     try:
         while True:

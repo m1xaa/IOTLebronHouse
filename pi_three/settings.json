@@ -12,7 +12,7 @@
         "name": "IR"
     },
     "BRGB": {
-        "simulated": false,
+        "simulated": true,
         "red_pin": 12,
         "green_pin": 13,
         "blue_pin": 19,

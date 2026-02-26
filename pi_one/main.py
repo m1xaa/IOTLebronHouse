@@ -74,62 +74,7 @@ def dl_off():
             print_event("[DL1]", "auto-off after 10s")
         except Exception as e:
             print_event("[DL1]", f"auto-off error: {e}")
-
-def cli_loop(actuators, stop_event):
-    help_text = (
-        "\nCommands:\n"
-        "  led on|off\n"
-        "  buzzer on|off\n"
-        "  status\n"
-        "  help\n"
-        "  exit\n"
-    )
-    print(help_text)
-
-    while not stop_event.is_set():
-        try:
-            cmd = input("pi1> ").strip()
-        except (EOFError, KeyboardInterrupt):
-            cmd = "exit"
-
-        if not cmd:
-            continue
-
-        parts = cmd.split()
-        c = parts[0].lower()
-
-        name_dl = settings['DL']['name']
-        name_db = settings['DB']['name']
-
-        if c == "help":
-            print(help_text)
-
-        elif c == "status":
-            print("Actuators:", ", ".join(sorted(actuators.keys())))
-
-        elif c == "led" and len(parts) >= 2:
-            is_sim = settings["DL"].get("simulated", True)
-            if parts[1].lower() == "on":
-                actuators["DL"].on()
-                publisher.publish(name_dl, True, is_sim)
-            elif parts[1].lower() == "off":
-                actuators["DL"].off()
-                publisher.publish(name_dl, False, is_sim)
-
-        elif c == "buzzer" and len(parts) >= 2:
-            is_sim = settings["DB"].get("simulated", True)
-            if parts[1].lower() == "on":
-                actuators["DB"].on()
-                publisher.publish(name_db, True, is_sim)
-            elif parts[1].lower() == "off":
-                actuators["DB"].off()
-                publisher.publish(name_db, False, is_sim)
-
-        elif c == "exit":
-            stop_event.set()
-
-        else:
-            print("Unknown command. Type 'help'.")
+            
 
 def mqtt_message_handler(topic, payload):
     if payload.get("type") == "ALARM":
@@ -184,13 +129,16 @@ def main():
 
 
 
-    #run_ds({**settings["DS1"], "delay_sec": poll_delay}, threads, stop_event, ds1_cb)
-    #run_dpir({**settings["DPIR1"], "delay_sec": poll_delay}, threads, stop_event, dpir1_cb)
-    #run_dus({**settings["DUS1"], "delay_sec": poll_delay}, threads, stop_event, dus1_cb)
+    run_ds({**settings["DS1"], "delay_sec": poll_delay}, threads, stop_event, ds1_cb)
+    run_dpir({**settings["DPIR1"], "delay_sec": poll_delay}, threads, stop_event, dpir1_cb)
+    run_dus({**settings["DUS1"], "delay_sec": poll_delay}, threads, stop_event, dus1_cb)
     run_dms(settings["DMS"], threads, stop_event, dms_cb)
 
     try:
-        cli_loop(actuators, stop_event)
+        while True:
+            time.sleep(1)
+    except KeyboardInterrupt:
+        stop_event.set()
     finally:
         for a in actuators.values():
             try:

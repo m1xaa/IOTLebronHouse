@@ -175,10 +175,10 @@ def main():
     lcd = create_lcd(settings["LCD"])
 
 
-    #run_ir(settings["IR"], threads, stop_event, ir_cb)
-    # run_dht({**settings["DHT1"], "delay_sec": 3}, threads, stop_event, dht1_cb)
-    # run_dht({**settings["DHT2"], "delay_sec": 3}, threads, stop_event, dht2_cb)
-    #run_dpir({**settings["DPIR3"], "delay_sec": 3}, threads, stop_event, dpir3_cb)
+    run_ir(settings["IR"], threads, stop_event, ir_cb)
+    run_dht({**settings["DHT1"], "delay_sec": 3}, threads, stop_event, dht1_cb)
+    run_dht({**settings["DHT2"], "delay_sec": 3}, threads, stop_event, dht2_cb)
+    run_dpir({**settings["DPIR3"], "delay_sec": 3}, threads, stop_event, dpir3_cb)
 
 
     rotation_thread = threading.Thread(
